@@ -109,7 +109,7 @@ export default function App() {
         <div className="menu-section">
           {activeTab === 'food' && (
             <>
-              <h2 className="section-title">히어 세트</h2>
+              <h2 className="section-title">대표님 Pick!</h2>
               {popularMenu.map(item => (
                 <MenuItem key={item.id} item={item} quantities={quantities} updateQty={updateQty} />
               ))}
