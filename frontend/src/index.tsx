@@ -1,8 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import RootRouter from './RootRouter';
-import reportWebVitals from './reportWebVitals';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import App from './App';
+import Admin from './Admin'; // 실제 Admin.tsx 위치에 따라 경로 조정
+
+import WaitingPage from './Waiting/WaitingPage';
+import WaitingList from './Waiting/WaitingList';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -11,9 +14,12 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <RootRouter />
+      <Routes>
+        <Route path="/" element={<App />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/wait" element={<WaitingPage/>} />
+        <Route path="/waiting" element={<WaitingList/>} />
+      </Routes>
     </BrowserRouter>
   </React.StrictMode>
 );
-
-reportWebVitals();
