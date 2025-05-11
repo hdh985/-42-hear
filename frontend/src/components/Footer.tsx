@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
               <h3 className="text-xl font-bold">히어컴퍼니</h3>
             </div>
             <p className="text-blue-200 text-sm">
-            아델란테를 더욱 즐겁게 만드는 히어스톡스에서 다양한 메뉴를 주식처럼 거래하세요. 맛있는 음식과 음료를 합리적인 가격에 제공합니다.
+            아델란테를 더욱 즐겁게 만드는 히어컴퍼니에서 다양한 메뉴를 주식처럼 거래하세요. 맛있는 음식과 음료를 합리적인 가격에 제공합니다.
             </p>
           </div>
           
@@ -24,15 +24,15 @@ const Footer: React.FC = () => {
             <ul className="space-y-2 text-sm">
               <li className="flex items-center text-blue-200">
                 <MapPin size={16} className="mr-2 text-blue-300" />
-                서울특별시 강남구 테헤란로 123, 히어빌딩 7층
+                경기도 용인시 기흥구 덕영대로 1732
               </li>
               <li className="flex items-center text-blue-200">
                 <Phone size={16} className="mr-2 text-blue-300" />
-                02-123-4567
+                 대표이사 윤동현 : 010-6276-0281
               </li>
               <li className="flex items-center text-blue-200">
                 <Mail size={16} className="mr-2 text-blue-300" />
-                info@herecompany.com
+                hear@herecompany.com
               </li>
               <li className="flex items-center text-blue-200">
                 <Globe size={16} className="mr-2 text-blue-300" />
