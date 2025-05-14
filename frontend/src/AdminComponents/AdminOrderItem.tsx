@@ -1,4 +1,3 @@
-// src/AdminComponents/AdminOrderItem.tsx
 import React from 'react';
 import axios from 'axios';
 
@@ -38,15 +37,15 @@ export default function AdminOrderItem({
     return '기타';
   };
 
-  const handleItemCheck = async (itemIndex: number) => {
+  const handleItemToggle = async (itemIndex: number, currentServedBy?: string) => {
     try {
       const formData = new FormData();
       formData.append('item_index', itemIndex.toString());
-      formData.append('admin', adminName);
+      formData.append('admin', currentServedBy ? '' : adminName); // 체크해제 시 빈값
       await axios.patch(`http://localhost:8000/api/orders/${order.id}/serve-item`, formData);
       onRefresh();
     } catch (e) {
-      console.error('개별 항목 처리 실패', e);
+      console.error('항목 처리 실패', e);
     }
   };
 
@@ -105,8 +104,8 @@ export default function AdminOrderItem({
             <input
               type="checkbox"
               checked={!!item.served_by}
-              onChange={() => handleItemCheck(i)}
-              disabled={!!item.served_by || order.processed}
+              onChange={() => handleItemToggle(i, item.served_by)}
+              disabled={order.processed}
             />
             <span className={item.served_by ? 'line-through text-gray-500' : ''}>
               {item.name} {item.served_by ? `(by ${item.served_by})` : ''}
@@ -116,7 +115,6 @@ export default function AdminOrderItem({
       </ul>
 
       <div className="text-sm mb-1">총 금액: <span className="font-semibold">{order.total.toLocaleString()}원</span></div>
-      <div className="text-sm mb-1">신청곡: {order.song || '-'}</div>
       <div className="text-xs text-gray-400">주문 시각: {new Date(order.timestamp).toLocaleTimeString()}</div>
 
       {order.image_path && (

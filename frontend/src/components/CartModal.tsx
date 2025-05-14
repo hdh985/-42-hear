@@ -1,5 +1,4 @@
 import React from 'react';
-// X를 사용하지 않으므로 import에서 제거
 import OrderForm, { CartItem } from './OrderForm';
 
 interface CartModalProps {
@@ -18,21 +17,25 @@ const CartModal: React.FC<CartModalProps> = ({
   cartCount 
 }) => {
   if (!isOpen) return null;
-  
+
   return (
     <>
+      {/* 뒷배경 (블러 + 오버레이) */}
       <div 
         className="fixed inset-0 bg-black bg-opacity-50 z-40 backdrop-blur-sm"
         onClick={toggleOrder}
       />
-      
-      <div className="fixed inset-x-0 bottom-0 max-h-[90vh] bg-white rounded-t-xl shadow-xl z-50 overflow-y-auto">
-        <OrderForm 
-          cartItems={cartItems}
-          cartTotal={cartTotal}
-          cartCount={cartCount}
-          toggleOrder={toggleOrder}
-        />
+
+      {/* 모달 본체 (모바일 고정) */}
+      <div className="fixed inset-x-0 bottom-0 z-50">
+        <div className="mx-auto w-full max-w-md bg-white rounded-t-lg shadow-lg overflow-y-auto max-h-[90vh]">
+          <OrderForm 
+            cartItems={cartItems}
+            cartTotal={cartTotal}
+            cartCount={cartCount}
+            toggleOrder={toggleOrder}
+          />
+        </div>
       </div>
     </>
   );

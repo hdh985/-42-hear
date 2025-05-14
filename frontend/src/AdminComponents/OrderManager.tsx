@@ -1,5 +1,4 @@
-// src/AdminComponents/OrderManager.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import AdminOrderItem from './AdminOrderItem';
 
@@ -30,19 +29,32 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
   const [orders, setOrders] = useState<Order[]>([]);
   const [elapsedTimes, setElapsedTimes] = useState<{ [key: number]: number }>({});
   const [zoneTab, setZoneTab] = useState<'all' | '돌다방' | '흡연부스'>('all');
+  const prevOrderIdsRef = useRef<number[]>([]);
+  const alertAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const fetchOrders = async () => {
     try {
       const res = await axios.get<Order[]>('http://localhost:8000/api/orders');
-      setOrders(res.data);
+      const data = res.data;
+
+      // 신규 주문 감지 -> 알람 소리 재생
+      const newOrder = data.some(o => !prevOrderIdsRef.current.includes(o.id));
+      if (newOrder && alertAudioRef.current) {
+        alertAudioRef.current.currentTime = 0;
+        alertAudioRef.current.play();
+      }
+
+      // 상태 업데이트
+      setOrders(data);
+      prevOrderIdsRef.current = data.map(o => o.id);
 
       if (onRevenueUpdate) {
-        const total = res.data.reduce((sum, o) => sum + o.total, 0);
+        const total = data.reduce((sum, o) => sum + o.total, 0);
         onRevenueUpdate(total);
       }
 
       if (onOrderData) {
-        onOrderData(res.data);
+        onOrderData(data);
       }
     } catch (e) {
       console.error('주문 조회 실패', e);
@@ -50,6 +62,7 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
   };
 
   useEffect(() => {
+    alertAudioRef.current = new Audio('/alert.mp3'); // public/alert.mp3
     fetchOrders();
     const interval = setInterval(fetchOrders, 5000);
     return () => clearInterval(interval);
@@ -77,10 +90,7 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
     return '기타';
   };
 
-  const filtered = orders.filter((order) => {
-    if (zoneTab === 'all') return true;
-    return getZone(order.table) === zoneTab;
-  });
+  const filtered = orders.filter(order => zoneTab === 'all' || getZone(order.table) === zoneTab);
 
   const pendingOrders = filtered.filter(o => !o.processed);
   const doneOrders = filtered.filter(o => o.processed);
@@ -94,7 +104,7 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
           <button
             key={zone}
             onClick={() => setZoneTab(zone as 'all' | '돌다방' | '흡연부스')}
-            className={`px-4 py-2 rounded-lg shadow transition transform duration-200 font-semibold ${
+            className={`px-4 py-2 rounded-lg shadow transition transform font-semibold ${
               zoneTab === zone ? 'bg-blue-700 text-white scale-105' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
