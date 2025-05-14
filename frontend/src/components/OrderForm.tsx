@@ -154,9 +154,20 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
         </div>
       </div>
       <div className="flex items-start mb-3">
-        <input id="agrees" name="agrees" type="checkbox" checked={userInfo.agrees} onChange={handleInfoChange} className="mt-1 h-4 w-4" />
-        <label htmlFor="agrees" className="ml-2 text-xs">개인정보 수집 및 이용 동의</label>
+  <input id="agrees" name="agrees" type="checkbox" checked={userInfo.agrees} onChange={handleInfoChange} className="mt-1 h-4 w-4" />
+      <label htmlFor="agrees" className="ml-2 text-xs font-medium">개인정보 수집 및 이용 동의</label>
+    </div>
+
+    <div className="bg-gray-50 border border-gray-300 rounded p-3 mb-4 text-[11px] text-gray-600 leading-snug">
+      <p className="font-semibold mb-1">[수집하는 개인정보 항목]</p>
+      <p>- 성명, 전화번호</p>
+      <p className="font-semibold mt-2 mb-1">[수집 및 이용 목적]</p>
+      <p>- 입장 확인, 연락 및 호출</p>
+      <p className="font-semibold mt-2 mb-1">[보유 및 이용 기간]</p>
+      <p>- 행사 종료 후 즉시 파기됨</p>
+      <p className="mt-2 text-red-500">※ 귀하는 이에 대한 동의를 거부할 수 있으며, 동의하지 않을 경우 등록이 제한됩니다.</p>
       </div>
+
       <div className="bg-gray-50 p-3 rounded mb-3">
         <h4 className="font-bold mb-2 flex items-center"><DollarSign size={14} className="mr-1 text-blue-600" /> 송금 정보</h4>
         <div className="text-xs">

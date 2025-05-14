@@ -19,50 +19,44 @@ interface Order {
   processed: boolean;
 }
 
-interface OrderManagerProps {
+interface Props {
   onRevenueUpdate?: (total: number) => void;
   onOrderData?: (orders: Order[]) => void;
   adminName: string;
 }
 
-export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }: OrderManagerProps) {
+export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }: Props) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [elapsedTimes, setElapsedTimes] = useState<{ [key: number]: number }>({});
   const [zoneTab, setZoneTab] = useState<'all' | '돌다방' | '흡연부스'>('all');
+
   const prevOrderIdsRef = useRef<number[]>([]);
-  const alertAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get<Order[]>('http://localhost:8000/api/orders');
-      const data = res.data;
+      const { data } = await axios.get<Order[]>('http://localhost:8000/api/orders');
 
-      // 신규 주문 감지 -> 알람 소리 재생
-      const newOrder = data.some(o => !prevOrderIdsRef.current.includes(o.id));
-      if (newOrder && alertAudioRef.current) {
-        alertAudioRef.current.currentTime = 0;
-        alertAudioRef.current.play();
+      // 신규 주문 감지 후 알람
+      const newOrders = data.filter(o => !prevOrderIdsRef.current.includes(o.id));
+      if (newOrders.length > 0 && audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(console.warn);
       }
 
-      // 상태 업데이트
       setOrders(data);
       prevOrderIdsRef.current = data.map(o => o.id);
 
-      if (onRevenueUpdate) {
-        const total = data.reduce((sum, o) => sum + o.total, 0);
-        onRevenueUpdate(total);
-      }
+      onRevenueUpdate?.(data.reduce((sum, o) => sum + o.total, 0));
+      onOrderData?.(data);
 
-      if (onOrderData) {
-        onOrderData(data);
-      }
-    } catch (e) {
-      console.error('주문 조회 실패', e);
+    } catch (err) {
+      console.error('주문 조회 실패', err);
     }
   };
 
   useEffect(() => {
-    alertAudioRef.current = new Audio('/alert.mp3'); // public/alert.mp3
+    audioRef.current = new Audio('/alert.mp3');
     fetchOrders();
     const interval = setInterval(fetchOrders, 5000);
     return () => clearInterval(interval);
@@ -70,16 +64,17 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setElapsedTimes(prev => {
-        const next: { [key: number]: number } = {};
+      setElapsedTimes(current => {
+        const updated: { [key: number]: number } = {};
         orders.forEach(order => {
           if (!order.processed) {
-            next[order.id] = Math.floor((Date.now() - new Date(order.timestamp).getTime()) / 1000);
+            updated[order.id] = Math.floor((Date.now() - new Date(order.timestamp).getTime()) / 1000);
           }
         });
-        return next;
+        return updated;
       });
     }, 1000);
+
     return () => clearInterval(timer);
   }, [orders]);
 
@@ -90,7 +85,9 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
     return '기타';
   };
 
-  const filtered = orders.filter(order => zoneTab === 'all' || getZone(order.table) === zoneTab);
+  const filtered = orders.filter(order =>
+    zoneTab === 'all' || getZone(order.table) === zoneTab
+  );
 
   const pendingOrders = filtered.filter(o => !o.processed);
   const doneOrders = filtered.filter(o => o.processed);
@@ -100,12 +97,14 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
       <h2 className="text-3xl font-extrabold mb-6">📋 주문 목록</h2>
 
       <div className="flex space-x-2 mb-6">
-        {['all', '돌다방', '흡연부스'].map((zone) => (
+        {['all', '돌다방', '흡연부스'].map(zone => (
           <button
             key={zone}
-            onClick={() => setZoneTab(zone as 'all' | '돌다방' | '흡연부스')}
-            className={`px-4 py-2 rounded-lg shadow transition transform font-semibold ${
-              zoneTab === zone ? 'bg-blue-700 text-white scale-105' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            onClick={() => setZoneTab(zone as typeof zoneTab)}
+            className={`px-4 py-2 rounded-lg font-semibold transition shadow ${
+              zoneTab === zone
+                ? 'bg-blue-700 text-white scale-105'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
             {zone === 'all' ? '전체' : zone}
