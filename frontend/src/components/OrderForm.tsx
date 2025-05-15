@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { DollarSign, Upload, Check, User, X } from 'lucide-react';
+import { DollarSign, Upload, Check, User, X, Plus, Minus } from 'lucide-react';
 
 export interface CartItem {
   id: string;
@@ -9,40 +9,29 @@ export interface CartItem {
   quantity: number;
 }
 
-export interface UserInfoType {
-  name: string;
-  phone: string;
-  agrees: boolean;
-}
-
-interface BankInfo {
-  bank: string;
-  account: string;
-  name: string;
-}
-
 interface OrderFormProps {
   cartItems: CartItem[];
   cartTotal: number;
   cartCount: number;
   toggleOrder: () => void;
+  updateCartItem: (id: string, quantity: number) => void;
 }
 
-const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, toggleOrder }) => {
+const bankInfo = {
+  bank: '신한은행',
+  account: '110-123-456789',
+  name: '히어컴퍼니',
+};
+
+const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, toggleOrder, updateCartItem }) => {
   const [orderComplete, setOrderComplete] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfoType>({ name: '', phone: '', agrees: false });
+  const [userInfo, setUserInfo] = useState({ name: '', phone: '', agrees: false });
   const [paymentImage, setPaymentImage] = useState<File | null>(null);
   const [orderNumber, setOrderNumber] = useState('');
 
-  const bankInfo: BankInfo = {
-    bank: '신한은행',
-    account: '110-123-456789',
-    name: '히어컴퍼니'
-  };
-
   const handleInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setUserInfo({ ...userInfo, [name]: type === 'checkbox' ? checked : value });
+    setUserInfo(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,12 +40,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
   };
 
   const completeOrder = async () => {
-    if (!userInfo.name || !userInfo.phone || !userInfo.agrees) {
-      alert('모든 정보를 입력하고 개인정보 수집에 동의해주세요.');
-      return;
-    }
-    if (!paymentImage) {
-      alert('송금 내역 이미지를 업로드해주세요.');
+    if (!userInfo.name || !userInfo.phone || !userInfo.agrees || !paymentImage) {
+      alert('모든 필수 정보를 입력해주세요.');
       return;
     }
 
@@ -75,132 +60,118 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
       setOrderNumber(`STONKS-${response.data.order_id}`);
       setOrderComplete(true);
     } catch (error) {
-      alert('주문 전송에 실패했습니다.');
+      alert('주문 전송 실패');
       console.error(error);
     }
   };
 
   if (orderComplete) {
     return (
-      <div className="p-3 text-sm">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="font-bold">매수 체결 완료!</h3>
-          <button onClick={toggleOrder} className="p-2 text-gray-500">
-            <X size={18} />
-          </button>
+      <div className="p-4 text-sm space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-bold">매수 체결 완료!</h3>
+          <button onClick={toggleOrder} className="text-gray-500"><X size={20} /></button>
         </div>
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center mx-auto mb-2">
-            <Check size={28} className="text-white" />
+        <div className="text-center space-y-2">
+          <div className="w-16 h-16 mx-auto bg-green-500 text-white rounded-full flex items-center justify-center">
+            <Check size={28} />
           </div>
-          <h3 className="font-bold mb-1">주문이 체결되었습니다!</h3>
-          <p className="text-gray-600 mb-3">송금 확인 후 메뉴가 준비됩니다.</p>
+          <p className="font-medium">주문이 접수되었습니다.</p>
+          <p className="text-gray-600 text-xs">송금 확인 후 메뉴가 준비됩니다.</p>
         </div>
-        <div className="bg-blue-800 text-white p-3 rounded-lg mb-3">
-          <div className="flex justify-between mb-1">
-            <span>주문 코드</span>
-            <span className="font-bold">{orderNumber}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>매수 금액</span>
-            <span className="font-bold">₩{cartTotal.toLocaleString()}</span>
-          </div>
+        <div className="bg-blue-800 text-white p-3 rounded-lg space-y-1">
+          <div className="flex justify-between text-sm"><span>주문 코드</span><span>{orderNumber}</span></div>
+          <div className="flex justify-between text-sm"><span>총 금액</span><span>₩{cartTotal.toLocaleString()}</span></div>
         </div>
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-2 rounded mb-3">
-          <p>저희 직원이 직접 서빙해드릴 예정입니다.</p>
-        </div>
-        <button onClick={toggleOrder} className="w-full py-2 bg-blue-600 text-white rounded-full">확인</button>
+        <button onClick={toggleOrder} className="w-full py-2 bg-blue-600 text-white rounded-lg">확인</button>
       </div>
     );
   }
 
   return (
-    <div className="p-3 text-sm">
-      <div className="flex justify-between items-center mb-3">
-        <h3 className="font-bold">매수 주문서</h3>
-        <button onClick={toggleOrder} className="p-2 text-gray-500">
-          <X size={18} />
-        </button>
+    <div className="p-4 text-sm space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-bold">매수 주문서</h3>
+        <button onClick={toggleOrder} className="text-gray-500"><X size={20} /></button>
       </div>
-      <div className="bg-blue-50 p-2 rounded mb-3">
-        <h4 className="font-bold text-blue-900">주문 내역</h4>
-        <div className="flex justify-between font-bold">
+
+      <div className="bg-blue-50 p-3 rounded-lg">
+        <h4 className="font-bold mb-2">주문 내역</h4>
+        {cartItems.map(item => (
+          <div key={item.id} className="flex justify-between items-center mb-2">
+            <span className="font-medium">{item.title}</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => updateCartItem(item.id, item.quantity - 1)} disabled={item.quantity <= 1} className="p-1 rounded bg-gray-200 hover:bg-gray-300"><Minus size={14} /></button>
+              <span>{item.quantity}</span>
+              <button onClick={() => updateCartItem(item.id, item.quantity + 1)} className="p-1 rounded bg-gray-200 hover:bg-gray-300"><Plus size={14} /></button>
+              <span className="ml-2 text-sm">₩{(item.price * item.quantity).toLocaleString()}</span>
+            </div>
+          </div>
+        ))}
+        <div className="flex justify-between font-bold mt-3">
           <span>총액</span>
           <span>₩{cartTotal.toLocaleString()}</span>
         </div>
-        <p className="text-blue-600 mt-1">종목 {cartCount}개 매수</p>
-      </div>
-      <div className="space-y-2 mb-4">
-        {cartItems.map(item => (
-          <div key={item.id} className="p-2 bg-gray-50 rounded flex justify-between items-center">
-            <span className="font-medium">{item.title}</span>
-            <span>{item.quantity} × ₩{item.price.toLocaleString()}</span>
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <div>
-          <label className="block mb-1">매수자명</label>
-          <div className="relative">
-            <div className="absolute left-2 top-2.5 text-gray-400">
-              <User size={14} />
-            </div>
-            <input type="text" name="name" value={userInfo.name} onChange={handleInfoChange} placeholder="이름" className="pl-8 pr-2 py-2 border rounded text-sm w-full" />
-          </div>
-        </div>
-        <div>
-          <label className="block mb-1">테이블 번호</label>
-          <input type="tel" name="phone" value={userInfo.phone} onChange={handleInfoChange} className="px-2 py-2 border rounded text-sm w-full" />
-        </div>
-      </div>
-      <div className="flex items-start mb-3">
-  <input id="agrees" name="agrees" type="checkbox" checked={userInfo.agrees} onChange={handleInfoChange} className="mt-1 h-4 w-4" />
-      <label htmlFor="agrees" className="ml-2 text-xs font-medium">개인정보 수집 및 이용 동의</label>
-    </div>
-
-    <div className="bg-gray-50 border border-gray-300 rounded p-3 mb-4 text-[11px] text-gray-600 leading-snug">
-      <p className="font-semibold mb-1">[수집하는 개인정보 항목]</p>
-      <p>- 성명, 전화번호</p>
-      <p className="font-semibold mt-2 mb-1">[수집 및 이용 목적]</p>
-      <p>- 입장 확인, 연락 및 호출</p>
-      <p className="font-semibold mt-2 mb-1">[보유 및 이용 기간]</p>
-      <p>- 행사 종료 후 즉시 파기됨</p>
-      <p className="mt-2 text-red-500">※ 귀하는 이에 대한 동의를 거부할 수 있으며, 동의하지 않을 경우 등록이 제한됩니다.</p>
       </div>
 
-      <div className="bg-gray-50 p-3 rounded mb-3">
-        <h4 className="font-bold mb-2 flex items-center"><DollarSign size={14} className="mr-1 text-blue-600" /> 송금 정보</h4>
-        <div className="text-xs">
-          <div className="mb-1">은행명: {bankInfo.bank}</div>
-          <div className="mb-1">계좌번호: {bankInfo.account}</div>
-          <div>예금주: {bankInfo.name}</div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs">입금자명</label>
+          <input name="name" value={userInfo.name} onChange={handleInfoChange} placeholder="이름" className="w-full px-3 py-2 border rounded text-sm" />
+        </div>
+        <div>
+          <label className="text-xs">테이블 번호</label>
+          <input name="phone" value={userInfo.phone} onChange={handleInfoChange} placeholder="1 ~ 100" className="w-full px-3 py-2 border rounded text-sm" />
         </div>
       </div>
-      <div className="mb-4">
-        <label className="block mb-1">송금 증빙 업로드</label>
+
+      <div className="flex items-start text-xs">
+        <input id="agrees" name="agrees" type="checkbox" checked={userInfo.agrees} onChange={handleInfoChange} className="mr-2" />
+        <label htmlFor="agrees" className="text-gray-700">개인정보 수집 및 이용 동의</label>
+      </div>
+
+      <div className="bg-gray-50 p-3 rounded text-[11px] text-gray-600 space-y-1">
+        <p>[수집 항목] 성명, 전화번호</p>
+        <p>[이용 목적] 입장 확인, 호출</p>
+        <p>[보유 기간] 행사 종료 후 즉시 파기</p>
+        <p className="text-red-500">동의 거부 시 등록 제한</p>
+      </div>
+
+      <div className="bg-gray-50 p-3 rounded">
+        <h4 className="font-bold mb-2 flex items-center"><DollarSign size={14} className="mr-1" /> 송금 정보</h4>
+        <p className="text-xs">은행: {bankInfo.bank}</p>
+        <p className="text-xs">계좌: {bankInfo.account}</p>
+        <p className="text-xs">예금주: {bankInfo.name}</p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs">송금 증빙 업로드</label>
         <div className={`border-2 border-dashed rounded p-3 text-center ${paymentImage ? 'border-green-500 bg-green-50' : 'border-gray-300'}`}>
           {paymentImage ? (
-            <div>
-              <div className="mb-1 text-green-600 flex items-center justify-center">
-                <Check size={16} className="mr-1" /> 업로드 완료
-              </div>
+            <>
+              <div className="text-green-600 flex justify-center items-center"><Check size={14} className="mr-1" /> 업로드 완료</div>
               <p className="text-xs">{paymentImage.name}</p>
-              <button onClick={() => setPaymentImage(null)} className="mt-2 text-blue-600 text-xs">다시 업로드</button>
-            </div>
+              <button onClick={() => setPaymentImage(null)} className="text-blue-600 text-xs mt-1">다시 업로드</button>
+            </>
           ) : (
-            <div>
-              <Upload className="mx-auto h-8 w-8 text-gray-400" />
-              <p className="mt-1 text-xs text-gray-600">송금 캡쳐 이미지를 첨부해주세요</p>
-              <label className="mt-2 inline-flex items-center px-3 py-1 bg-blue-600 text-white text-xs rounded cursor-pointer">
-                이미지 선택
-                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+            <>
+              <Upload className="mx-auto text-gray-400" size={20} />
+              <p className="text-xs mt-1">송금 캡쳐 이미지를 첨부해주세요</p>
+              <label className="inline-block mt-2 text-white bg-blue-600 px-3 py-1 rounded text-xs cursor-pointer">
+                파일 선택
+                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
               </label>
-            </div>
+            </>
           )}
         </div>
       </div>
-      <button onClick={completeOrder} className="w-full py-2 bg-blue-600 text-white rounded" disabled={!userInfo.name || !userInfo.phone || !userInfo.agrees || !paymentImage}>
-        주문 체결하기
+
+      <button
+        onClick={completeOrder}
+        disabled={!userInfo.name || !userInfo.phone || !userInfo.agrees || !paymentImage}
+        className="w-full py-2 bg-blue-700 text-white rounded-lg disabled:opacity-50"
+      >
+        🛒 주문 체결하기
       </button>
     </div>
   );

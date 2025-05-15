@@ -10,13 +10,13 @@ const Footer: React.FC = () => (
             <BarChart2 size={16} />
           </div>
           <div>
-            <h3 className="font-bold">히어스톡스</h3>
-            <p className="text-blue-300 text-[10px]">(주)히어컴퍼니</p>
+            <h3 className="font-bold">히어컴퍼니</h3>
+            <p className="text-blue-300 text-[10px]">(주)히어</p>
           </div>
         </div>
 
         <div className="space-y-1 text-blue-200">
-          <div className="flex items-center"><MapPin size={12} className="mr-1" /> 경기도 용인시 기흥구</div>
+          <div className="flex items-center"><MapPin size={12} className="mr-1" /> 경희대학교 외국어대학 앞 민주광장</div>
           <div className="flex items-center"><Phone size={12} className="mr-1" /> 010-6276-0281</div>
           <div className="flex items-center"><Mail size={12} className="mr-1" /> hear@herecompany.com</div>
           <div className="flex items-center"><Globe size={12} className="mr-1" /> www.herecompany.com</div>
@@ -29,7 +29,7 @@ const Footer: React.FC = () => (
         </div>
 
         <div className="border-t border-blue-800 pt-2 text-center text-blue-300 text-[10px]">
-          © {new Date().getFullYear()} HEAR Company. All Rights Reserved.
+          © {new Date().getFullYear()} hear Company. All Rights Reserved.
         </div>
       </div>
     </div>

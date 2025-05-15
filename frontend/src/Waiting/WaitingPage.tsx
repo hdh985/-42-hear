@@ -56,13 +56,13 @@ export default function WaitingPage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-100 to-gray-200 flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-300 overflow-hidden">
         <div className="bg-gradient-to-r from-blue-800 to-indigo-700 text-white text-center py-6 px-4">
-          <h1 className="text-2xl font-extrabold">HEAR COMPANY</h1>
+          <h1 className="text-2xl font-extrabold">hear: Company</h1>
           <p className="text-xs text-blue-200 mt-1">제42대 외국어대학 학생회 Hear</p>
         </div>
 
         <div className="p-6 space-y-5">
-          <p className="text-center text-sm text-gray-500">📢 5분 내 미입장 시 자동 취소됩니다.</p>
-
+          <p className="text-center text-sm text-gray-500">📢 문장 발송 부터 5분 내 미입장 시 자동 취소됩니다.</p>
+        
           <form onSubmit={handleSubmit} className="space-y-4 text-sm">
             <div>
               <label className="font-medium">예약자명</label>
@@ -88,7 +88,7 @@ export default function WaitingPage() {
             </div>
 
             <div>
-              <label className="font-medium">인원 수 (LOT)</label>
+              <label className="font-medium">인원 수</label>
               <input
                 type="number"
                 min={1}
@@ -99,6 +99,7 @@ export default function WaitingPage() {
               />
             </div>
 
+          
             <div className="flex items-start text-xs text-gray-700">
               <input
                 type="checkbox"

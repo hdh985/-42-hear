@@ -18,7 +18,7 @@ const Header: React.FC<Props> = ({ cartCount, cartTotal, toggleOrder }) => (
             </div>
             <div>
               <h1 className="text-lg font-bold">히어컴퍼니</h1>
-              <p className="text-xs text-blue-200">제42대 외국어대학 학생회 HEAR</p>
+              <p className="text-xs text-blue-200">제42대 외국어대학 학생회 hear</p>
             </div>
           </div>
           <button onClick={toggleOrder} className="relative bg-blue-500 px-3 py-1 rounded-full text-sm shadow">
@@ -31,25 +31,19 @@ const Header: React.FC<Props> = ({ cartCount, cartTotal, toggleOrder }) => (
           </button>
         </div>
 
-        <div className="flex space-x-2">
-          <div className="flex items-center bg-blue-800 bg-opacity-60 px-2 py-1 rounded-lg flex-1 justify-center">
-            <TrendingUp size={14} className="mr-1 text-green-400" />
-            <span>KHUSDAQ +2.35%</span>
-          </div>
-          <div className="flex items-center bg-blue-800 bg-opacity-60 px-2 py-1 rounded-lg flex-1 justify-center">
-            <DollarSign size={14} className="mr-1 text-blue-300" />
-            <span>거래량: 15,824</span>
-          </div>
-        </div>
+        
       </div>
 
       <div className="overflow-hidden">
         <div className="inline-flex animate-marquee whitespace-nowrap text-xs space-x-4 px-4">
-          <span className="text-green-400">수육 +4.2%</span>
-          <span className="text-green-400">에그인헬 +3.7%</span>
-          <span className="text-red-400">닭강정 -2.4%</span>
-          <span className="text-green-400">묵사발 +2.5%</span>
-          <span className="text-green-400">라면땅 +1.2%</span>
+          <span className="text-green-400">세계로 나아가는 히어컴퍼니 </span>
+          <span className="text-green-400">Moving Toward the World </span>
+          <span className="text-green-400">迈向世界 </span>
+          <span className="text-green-400">世界へ向かって進む </span>
+          <span className="text-green-400">Двигаясь навстречу мир </span>
+          <span className="text-green-400">En marche vers le monde  </span>
+          <span className="text-green-400">Avanzando hacia el mundo  </span>
+            
         </div>
       </div>
     </div>
