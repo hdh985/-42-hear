@@ -11,13 +11,13 @@ const Footer: React.FC = () => (
           </div>
           <div>
             <h3 className="font-bold">히어컴퍼니</h3>
-            <p className="text-blue-300 text-[10px]">(주)히어</p>
+            <p className="text-blue-300 text-[10px]">(주)hear</p>
           </div>
         </div>
 
         <div className="space-y-1 text-blue-200">
           <div className="flex items-center"><MapPin size={12} className="mr-1" /> 경희대학교 외국어대학 앞 민주광장</div>
-          <div className="flex items-center"><Phone size={12} className="mr-1" /> 010-6276-0281</div>
+          <div className="flex items-center"><Phone size={12} className="mr-1" /> 대표이사 윤동현: 010-6276-0281</div>
           <div className="flex items-center"><Mail size={12} className="mr-1" /> hear@herecompany.com</div>
           <div className="flex items-center"><Globe size={12} className="mr-1" /> www.herecompany.com</div>
         </div>

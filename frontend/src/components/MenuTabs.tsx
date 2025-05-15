@@ -68,7 +68,7 @@ const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) 
           </div>
           <div className="text-right">
             <p className="font-bold text-gray-900">
-              {activeCategory === 'snack' ? '닭강정' : '라면땅'}
+              {activeCategory === 'snack' ? '닭강정' : '후르츠 황도'}
             </p>
             <p className="text-green-600">
               {activeCategory === 'snack' ? '+2.0%' : '+0.5%'}

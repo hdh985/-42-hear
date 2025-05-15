@@ -131,8 +131,8 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
       </div>
 
       <div className="bg-gray-50 p-3 rounded text-[11px] text-gray-600 space-y-1">
-        <p>[수집 항목] 성명, 전화번호</p>
-        <p>[이용 목적] 입장 확인, 호출</p>
+        <p>[수집 항목] 성명, 전화번호, 송금캡쳐 이미지</p>
+        <p>[이용 목적] 축제 부스 운영 및 송금자 확인</p>
         <p>[보유 기간] 행사 종료 후 즉시 파기</p>
         <p className="text-red-500">동의 거부 시 등록 제한</p>
       </div>
