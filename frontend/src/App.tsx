@@ -37,16 +37,16 @@ const App: React.FC = () => {
 
   useEffect(() => {
     setMenuItems([
-      { id: 'snack1', title: '수육', description: '42시간 삶은 수육', price: 20000, change: '+2.0%', trend: 'up', marketCap: '2억원', volume: '152개', volatility: '중간', investment: '적극 매수' },
-      { id: 'snack2', title: '에그인헬', description: '치즈와 토마토 소스 + 빵 추가', price: 20000,  change: '+2.3%', trend: 'up', marketCap: '1.5억원', volume: '200개', volatility: '낮음', investment: '매수' },
-      { id: 'snack3', title: '닭강정', description: '달콤 매콤한 닭강정', price: 20000,  change: '+2.0%', trend: 'up', marketCap: '1.2억원', volume: '120개', volatility: '중간', investment: '매수' },
-      { id: 'snack4', title: '골뱅이 무침', description: '신선한 골뱅이와 채소', price: 20000, change: '+2.0%', trend: 'up', marketCap: '1억원', volume: '90개', volatility: '중간', investment: '관망' },
-      { id: 'snack5', title: '떡갈비', description: '육즙 가득한 떡갈비', price: 20000, change: '+2.0%', trend: 'up', marketCap: '1.3억원', volume: '110개', volatility: '중간', investment: '관망' },
-      { id: 'beverage1', title: '묵사발', description: '시원한 묵사발', price: 10000, change: '+1.0%', trend: 'up', marketCap: '9천만원', volume: '180개', volatility: '낮음', investment: '매수' },
-      { id: 'beverage2', title: '라면땅', description: '짭짤하고 바삭한 라면땅', price: 5000,  change: '+0.5%', trend: 'up', marketCap: '8천만원', volume: '210개', volatility: '매우 낮음', investment: '매수' },
-      { id: 'beverage3', title: '셀프 주먹밥', description: '김과 밥의 조화', price: 5000, change: '+0.5%', trend: 'up', marketCap: '5천만원', volume: '300개', volatility: '매우 낮음', investment: '보유' },
-      { id: 'beverage4', title: '카프레제', description: '토마토와 치즈의 조화', price: 10000, change: '+1.0%', trend: 'up', marketCap: '4천8백만원', volume: '280개', volatility: '매우 낮음', investment: '보유' },
-      { id: 'beverage5', title: '계란탕', description: '부드러운 계란탕', price: 10000,  change: '+1.0%', trend: 'up', marketCap: '4천8백만원', volume: '280개', volatility: '매우 낮음', investment: '보유' },
+      { id: 'snack1', title: "부장님 머리 없 '수육'", description: '훌러덩 훌러덩 넘어가는 부드러운 수육', price: 20000, change: '+7.0%', trend: 'up', marketCap: '134조원', volume: '152개', volatility: '낮음', investment: '적극 매수' },
+      { id: 'snack2', title: "이름은 지옥 맛은 천당 '에그인헬'", description: '입에서 퍼지는 천상의 맛', price: 20000,  change: '+4.3%', trend: 'up', marketCap: '78조원', volume: '200개', volatility: '낮음', investment: '매수' },
+      { id: 'snack3', title: "내 업무 모두 '닭강정'", description: '업무량만큼 매콤 달콤한 닭강정', price: 20000,  change: '+5.0%', trend: 'up', marketCap: '49조원', volume: '120개', volatility: '중간', investment: '매수' },
+      { id: 'snack4', title: "야근할때 먹으면 눈 번'떡갈비'", description: '육즙 가득한 눈 번뜩이는 떡갈비', price: 20000, change: '+4.0%', trend: 'up', marketCap: '64조원', volume: '110개', volatility: '중간', investment: '매수' },
+      { id: 'beverage1', title: "죽써서 '묵사발'된 보고서.zip", description: '속 시원해지는 시원한 묵사발', price: 10000, change: '+3.0%', trend: 'up', marketCap: '1332억원', volume: '180개', volatility: '낮음', investment: '매수' },
+      { id: 'beverage2', title: '계란처럼 깨진 내 멘탈 탕', description: '가슴속에는 사직서를 입속에는 계란탕을', price: 10000,  change: '+4.0%', trend: 'up', marketCap: '1217억원', volume: '280개', volatility: '매우 낮음', investment: '보유' },
+      { id: 'beverage3', title: "부장님 차 사실은 카풀이제(카프레제)?", description: '가벼운 술 안주 카프레제', price: 10000, change: '+3.0%', trend: 'up', marketCap: '68억원', volume: '280개', volatility: '매우 낮음', investment: '보유' },
+      { id: 'beverage4', title: "과장님 '셀프 주먹팍(밥)'", description: '대환상 파티의 주먹밥', price: 5000, change: '+0.5%', trend: 'up', marketCap: '34억원', volume: '300개', volatility: '매우 낮음', investment: '보유' },
+      { id: 'beverage5', title: "탕탕 후루'후르츠 황도'", description: '우리 부장님 어렸을 적 추억의 황도', price: 5000,  change: '+1.0%', trend: 'up', marketCap: '63억원', volume: '280개', volatility: '매우 낮음', investment: '보유' },
+      { id: 'beverage6', title: '자연스럽게 빵 추가', description: '에그인헬에 자연스럽게 슥 추가', price: 3000,  change: '+1.0%', trend: 'up', marketCap: '42억원', volume: '280개', volatility: '매우 낮음', investment: '보유' }
     ]);
   }, []);
 
@@ -59,7 +59,7 @@ const App: React.FC = () => {
         
         <main className="px-4 py-6">
           <div className="mb-4 bg-blue-600 text-white rounded-lg p-3 shadow">
-            <h2 className="text-lg font-bold">히어컴퍼니는 술막포차와 함께합니다</h2>
+            <h2 className="text-lg font-bold">히어컴퍼니는 술막포차와 함께합니다.</h2>
             <p className="text-sm text-blue-100">메뉴를 주식처럼 거래하는 신개념 음식 주문 플랫폼</p>
           </div>
 

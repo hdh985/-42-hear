@@ -1,4 +1,3 @@
-// src/Admin.tsx
 import React, { useEffect, useState } from 'react';
 import OrderManager from './AdminComponents/OrderManager';
 import WaitingManager from './AdminComponents/AdminWaitingManager';
@@ -14,6 +13,8 @@ export default function Admin() {
   const [showRevenue, setShowRevenue] = useState<boolean>(false);
   const [adminName, setAdminName] = useState<string | null>(null);
   const [revenueRanks, setRevenueRanks] = useState<RevenueRank>({});
+  const [doldabangRevenue, setDoldabangRevenue] = useState<number>(0);
+  const [smokingBoothRevenue, setSmokingBoothRevenue] = useState<number>(0);
 
   useEffect(() => {
     const saved = localStorage.getItem('adminName');
@@ -36,9 +37,21 @@ export default function Admin() {
     const total = orders.reduce((sum, o) => sum + o.total, 0);
     setTotalRevenue(total);
 
+    let doldabang = 0;
+    let smokingBooth = 0;
+
     const rank: RevenueRank = {};
     for (const order of orders) {
       if (order.processed && Array.isArray(order.items)) {
+        const tableNum = parseInt(order.table, 10);
+        if (!isNaN(tableNum)) {
+          if (tableNum >= 1 && tableNum <= 50) {
+            doldabang += order.total;
+          } else if (tableNum >= 51) {
+            smokingBooth += order.total;
+          }
+        }
+
         for (const item of order.items) {
           const admin = item.served_by;
           if (admin) {
@@ -47,6 +60,9 @@ export default function Admin() {
         }
       }
     }
+
+    setDoldabangRevenue(doldabang);
+    setSmokingBoothRevenue(smokingBooth);
     setRevenueRanks(rank);
   };
 
@@ -66,7 +82,7 @@ export default function Admin() {
       });
     }, 30);
     return () => clearInterval(interval);
-  }, [totalRevenue, showRevenue]);
+  }, [totalRevenue, showRevenue, animatedRevenue]);
 
   if (!adminName) return null;
 
@@ -75,12 +91,15 @@ export default function Admin() {
   return (
     <div className="p-6 max-w-5xl mx-auto font-sans">
       <div className="flex flex-wrap gap-4 mb-6 items-center">
-        <button
-          onClick={() => setActiveTab('orders')}
-          className={`px-5 py-2 rounded-lg font-semibold transition shadow ${
-            activeTab === 'orders' ? 'bg-blue-600 text-white scale-105' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
-          }`}
-        >
+      <button
+        onClick={() => {
+          setActiveTab('orders');
+          setShowRevenue(true); // ✅ 총매출 보이게 설정
+        }}
+        className={`px-5 py-2 rounded-lg font-semibold transition shadow ${
+          activeTab === 'orders' ? 'bg-blue-600 text-white scale-105' : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+        }`}
+      >
           📋 주문 관리
         </button>
         <button
@@ -109,7 +128,7 @@ export default function Admin() {
 
       {activeTab === 'orders' && (
         <OrderManager
-          onRevenueUpdate={(total) => setTotalRevenue(total)}
+
           adminName={adminName}
           onOrderData={updateRevenueData}
         />
@@ -122,6 +141,18 @@ export default function Admin() {
           <div className="bg-green-100 border border-green-300 text-green-800 text-3xl font-extrabold text-center py-6 rounded shadow animate-fade-in">
             💸 총 매출: {animatedRevenue.toLocaleString()} 원
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white border p-4 rounded shadow text-center">
+              <h5 className="text-xl font-bold mb-2">☕ 돌다방 매출</h5>
+              <p className="text-2xl font-extrabold text-blue-600">{doldabangRevenue.toLocaleString()} 원</p>
+            </div>
+            <div className="bg-white border p-4 rounded shadow text-center">
+              <h5 className="text-xl font-bold mb-2">🚬 흡연부스 매출</h5>
+              <p className="text-2xl font-extrabold text-red-600">{smokingBoothRevenue.toLocaleString()} 원</p>
+            </div>
+          </div>
+
           <div className="bg-white border p-6 rounded shadow">
             <h4 className="text-2xl font-bold mb-4">🏆 처리자 랭킹</h4>
             <ol className="list-decimal ml-6 space-y-2 text-lg">
