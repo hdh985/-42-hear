@@ -13,7 +13,7 @@ export default function WaitingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone) {
-      alert('이름과 전화번호를 입력해주세요');
+      alert('닉네임과 전화번호를 입력해주세요');
       return;
     }
     if (!agreed) {
@@ -70,7 +70,7 @@ export default function WaitingPage() {
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="대표자 한 분만"
+                placeholder="대표자 한 분만 입력"
                 className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring focus:ring-blue-300"
               />
             </div>

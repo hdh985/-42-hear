@@ -32,7 +32,12 @@ export default function WaitingList() {
 
   const formatPhoneTail = (phone: string) => phone.slice(-4);
   const sanitizePhone = (phone: string) => phone.replace(/\D/g, '');
-
+  const maskName = (name: string) => {
+    if (name.length <= 1) return name;
+    if (name.length === 2) return name[0] + '*';
+    return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1];
+  };
+  
   const confirmDelete = async () => {
     if (!selectedEntry) return;
   
@@ -76,10 +81,11 @@ export default function WaitingList() {
                 className="bg-white border rounded-xl shadow-md p-4 relative transition hover:shadow-lg"
               >
                 <div className="flex justify-between items-start mb-2">
-                  <div className="font-bold text-lg text-gray-800">
-                    {entry.name} 님 <span className="text-sm text-gray-500">({formatPhoneTail(entry.phone)})</span>
-                    <div className="text-sm text-gray-600 mt-1">{entry.tableSize}인 테이블</div>
-                  </div>
+                 <div className="font-bold text-lg text-gray-800">
+                  {maskName(entry.name)} 님 <span className="text-sm text-gray-500">({formatPhoneTail(entry.phone)})</span>
+                  <div className="text-sm text-gray-600 mt-1">{entry.tableSize}인 테이블</div>
+                </div>
+
                   <div className="text-right">
                     <span className="text-xs text-gray-500 block">{formatTime(entry.timestamp)}</span>
                     <button
