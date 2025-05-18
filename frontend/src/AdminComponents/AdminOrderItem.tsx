@@ -16,6 +16,7 @@ interface Order {
   image_path: string;
   timestamp: string;
   processed: boolean;
+  table_size: number;  // ✅ 인원수 필드 추가
 }
 
 interface Props {
@@ -41,7 +42,7 @@ export default function AdminOrderItem({
     try {
       const formData = new FormData();
       formData.append('item_index', itemIndex.toString());
-      formData.append('admin', currentServedBy ? '' : adminName); // 체크해제 시 빈값
+      formData.append('admin', currentServedBy ? '' : adminName);
       await axios.patch(`http://localhost:8000/api/orders/${order.id}/serve-item`, formData);
       onRefresh();
     } catch (e) {
@@ -85,7 +86,7 @@ export default function AdminOrderItem({
     }`}>
       <div className="flex justify-between items-center mb-3">
         <h4 className="text-lg font-bold text-blue-700">
-          {getZone(Number(order.table))} - 테이블 {order.table} - {order.name}
+          {getZone(Number(order.table))} - 테이블 {order.table} ({order.table_size}명) - {order.name}
         </h4>
         <div className="flex gap-2 items-center">
           {!order.processed && renderTimer(elapsed)}

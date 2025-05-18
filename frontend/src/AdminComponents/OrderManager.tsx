@@ -17,6 +17,7 @@ interface Order {
   image_path: string;
   timestamp: string;
   processed: boolean;
+  table_size: number;  // ✅ 추가된 필드
 }
 
 interface Props {
@@ -32,29 +33,40 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
 
   const prevOrderIdsRef = useRef<number[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const hasMountedRef = useRef(false);
 
-  const fetchOrders = async () => {
-    try {
-      const { data } = await axios.get<Order[]>('http://localhost:8000/api/orders');
+const fetchOrders = async () => {
+  try {
+    const { data } = await axios.get<Order[]>('http://localhost:8000/api/orders');
 
-      // 신규 주문 감지 후 알람
-      const newOrders = data.filter(o => !prevOrderIdsRef.current.includes(o.id));
-      if (newOrders.length > 0 && audioRef.current) {
-        audioRef.current.currentTime = 0;
-        audioRef.current.play().catch(console.warn);
-      }
+    const prevOrderIds = new Set(prevOrderIdsRef.current);
+    const currentIds = data.map(o => o.id);
 
-      setOrders(data);
-      prevOrderIdsRef.current = data.map(o => o.id);
+    const newUnprocessedOrders = data.filter(
+      (o) => !prevOrderIds.has(o.id) && !o.processed
+    );
 
-      onRevenueUpdate?.(data.reduce((sum, o) => sum + o.total, 0));
-      onOrderData?.(data);
-
-    } catch (err) {
-      console.error('주문 조회 실패', err);
+    // ✅ 최초 마운트 이후부터만 알림
+    if (hasMountedRef.current && newUnprocessedOrders.length > 0 && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(console.warn);
     }
-  };
 
+    prevOrderIdsRef.current = currentIds;
+    setOrders(data);
+
+    onRevenueUpdate?.(data.reduce((sum, o) => sum + o.total, 0));
+    onOrderData?.(data);
+
+    // ✅ 첫 fetch 이후에 알람 허용
+    hasMountedRef.current = true;
+
+  } catch (err) {
+    console.error('주문 조회 실패', err);
+  }
+};
+
+  
   useEffect(() => {
     audioRef.current = new Audio('/alert.mp3');
     fetchOrders();
