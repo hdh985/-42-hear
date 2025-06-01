@@ -44,6 +44,7 @@
   * Cloud Storage & CDN: 이미지 및 정적 파일 관리, 신속한 콘텐츠 전송
   * Load Balancer & Cloud Armor: 트래픽 관리 및 보안 강화
 
+![아키텍쳐]()
 ## 설치 및 실행 방법
 
 ### Frontend
