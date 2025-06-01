@@ -15,7 +15,7 @@ export default function WaitingList() {
   const [inputPhone, setInputPhone] = useState('');
 
   const fetchList = async () => {
-    const res = await axios.get<WaitingEntry[]>('http://localhost:8000/api/waiting');
+    const res = await axios.get<WaitingEntry[]>(`${process.env.REACT_APP_API_BASE_URL}/api/waiting`);
     setList(res.data);
   };
 
@@ -32,25 +32,39 @@ export default function WaitingList() {
 
   const formatPhoneTail = (phone: string) => phone.slice(-4);
   const sanitizePhone = (phone: string) => phone.replace(/\D/g, '');
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    let formatted = '';
+
+    if (raw.length <= 3) {
+      formatted = raw;
+    } else if (raw.length <= 7) {
+      formatted = `${raw.slice(0, 3)}-${raw.slice(3)}`;
+    } else if (raw.length <= 11) {
+      formatted = `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7)}`;
+    } else {
+      formatted = `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7, 11)}`;
+    }
+
+    setInputPhone(formatted);
+  };
+
   const maskName = (name: string) => {
     if (name.length <= 1) return name;
     if (name.length === 2) return name[0] + '*';
     return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1];
   };
-  
+
   const confirmDelete = async () => {
     if (!selectedEntry) return;
   
     try {
-      await axios.delete(`http://localhost:8000/api/waiting/${selectedEntry.id}`, {
-            data: { phone: inputPhone },
-            headers: {
-              'Content-Type': 'application/json',
-        },
+      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/waiting/${selectedEntry.id}`, {
+        data: { phone: inputPhone.replace(/\D/g, '') }, // ✅ 정제된 번호로 전송
+        headers: { 'Content-Type': 'application/json' },
       });
-          
-
-          
+  
       alert('삭제되었습니다.');
       setSelectedEntry(null);
       setInputPhone('');
@@ -65,7 +79,7 @@ export default function WaitingList() {
     }
   };
   
-
+  
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8">
       <div className="max-w-2xl mx-auto">
@@ -81,11 +95,10 @@ export default function WaitingList() {
                 className="bg-white border rounded-xl shadow-md p-4 relative transition hover:shadow-lg"
               >
                 <div className="flex justify-between items-start mb-2">
-                 <div className="font-bold text-lg text-gray-800">
-                  {maskName(entry.name)} 님 <span className="text-sm text-gray-500">({formatPhoneTail(entry.phone)})</span>
-                  <div className="text-sm text-gray-600 mt-1">{entry.tableSize}인 테이블</div>
-                </div>
-
+                  <div className="font-bold text-lg text-gray-800">
+                    {maskName(entry.name)} 님 <span className="text-sm text-gray-500">({formatPhoneTail(entry.phone)})</span>
+                    <div className="text-sm text-gray-600 mt-1">{entry.tableSize}인 테이블</div>
+                  </div>
                   <div className="text-right">
                     <span className="text-xs text-gray-500 block">{formatTime(entry.timestamp)}</span>
                     <button
@@ -114,7 +127,7 @@ export default function WaitingList() {
             <input
               type="tel"
               value={inputPhone}
-              onChange={(e) => setInputPhone(e.target.value)}
+              onChange={handlePhoneChange}
               className="w-full border border-gray-300 px-3 py-2 rounded mb-4 focus:outline-none focus:ring focus:border-blue-300"
               placeholder="전화번호 (예: 010-1234-5678)"
             />

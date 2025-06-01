@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, Text
 from database import Base
 
+
 class Order(Base):
     __tablename__ = "orders"
 

@@ -15,7 +15,10 @@ export default function WaitingManager() {
 
   const fetchList = async () => {
     try {
-      const res = await axios.get<WaitingEntry[]>('http://localhost:8000/api/admin/waiting');
+      const res = await axios.get<WaitingEntry[]>(
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/waiting`
+      );
+      
       setWaitingList(res.data);
     } catch (e) {
       console.error('목록 불러오기 실패', e);
@@ -24,7 +27,10 @@ export default function WaitingManager() {
 
   const handleRemove = async (id: number) => {
     try {
-      await axios.delete(`http://localhost:8000/api/waiting/admin/${id}`);
+      await axios.delete(
+        `${process.env.REACT_APP_API_BASE_URL}/api/waiting/admin/${id}`
+      );
+      
       fetchList();
     } catch (e) {
       alert('삭제 실패');

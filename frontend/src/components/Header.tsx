@@ -13,8 +13,9 @@ const Header: React.FC<Props> = ({ cartCount, cartTotal, toggleOrder }) => (
       <div className="px-4 py-3 space-y-3">
         <div className="flex justify-between items-center">
           <div className="flex items-center">
-            <div className="bg-blue-600 p-2 rounded-lg mr-2">
-              <BarChart2 size={20} />
+            <div className="bg-blue-700 p-2 rounded-lg mr-2">
+              <img src="/logo.png" alt="히어컴퍼니 로고" className="w-8 h-8" />
+
             </div>
             <div>
               <h1 className="text-lg font-bold">히어컴퍼니</h1>

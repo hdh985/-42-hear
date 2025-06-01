@@ -40,7 +40,7 @@ const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) 
             </div>
             <span className="text-sm font-medium">{category.name} 종목</span>
             <span className="text-xs mt-0.5 opacity-75">
-              {category.id === 'snack' ? '5종' : '5종'}
+              {category.id === 'snack' ? '4종' : '8종'}
             </span>
           </button>
         ))}

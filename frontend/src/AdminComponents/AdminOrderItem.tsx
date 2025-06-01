@@ -10,13 +10,13 @@ interface Order {
   id: number;
   table: string;
   name: string;
-  items: OrderItem[];
+  items: OrderItem[] | string; // ✅ 문자열일 수도 있음
   total: number;
   song: string;
   image_path: string;
   timestamp: string;
   processed: boolean;
-  table_size: number;  // ✅ 인원수 필드 추가
+  table_size: number;
 }
 
 interface Props {
@@ -43,7 +43,10 @@ export default function AdminOrderItem({
       const formData = new FormData();
       formData.append('item_index', itemIndex.toString());
       formData.append('admin', currentServedBy ? '' : adminName);
-      await axios.patch(`http://localhost:8000/api/orders/${order.id}/serve-item`, formData);
+      await axios.patch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/serve-item`,
+        formData
+      );
       onRefresh();
     } catch (e) {
       console.error('항목 처리 실패', e);
@@ -52,7 +55,9 @@ export default function AdminOrderItem({
 
   const handleComplete = async () => {
     try {
-      await axios.patch(`http://localhost:8000/api/orders/${order.id}/complete`);
+      await axios.patch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/complete`
+      );
       onRefresh();
     } catch (e) {
       console.error('전체 처리 실패', e);
@@ -61,7 +66,9 @@ export default function AdminOrderItem({
 
   const handleToggleStatus = async () => {
     try {
-      await axios.patch(`http://localhost:8000/api/orders/${order.id}/toggle`);
+      await axios.patch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/toggle`
+      );
       onRefresh();
     } catch (e) {
       console.error('상태 전환 실패', e);
@@ -71,19 +78,34 @@ export default function AdminOrderItem({
   const renderTimer = (elapsed: number) => {
     const minutes = Math.floor(elapsed / 60);
     const seconds = elapsed % 60;
-    const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds
+      .toString()
+      .padStart(2, '0')}`;
     let color = 'text-green-600';
     if (elapsed >= 900) color = 'text-red-600 font-bold';
     else if (elapsed >= 600) color = 'text-yellow-500 font-semibold';
-    return <span className={`text-sm px-3 py-1 rounded-full border ${color} bg-gray-100`}>⏱ {timeStr}</span>;
+    return (
+      <span
+        className={`text-sm px-3 py-1 rounded-full border ${color} bg-gray-100`}
+      >
+        ⏱ {timeStr}
+      </span>
+    );
   };
 
-  const allItemsServed = order.items.every(item => item.served_by);
+  // ✅ 문자열일 경우 JSON.parse() 처리
+  const parsedItems: OrderItem[] = typeof order.items === 'string'
+    ? JSON.parse(order.items)
+    : order.items;
+
+  const allItemsServed = parsedItems.every((item) => item.served_by);
 
   return (
-    <div className={`p-6 mb-6 border rounded-xl shadow transition ${
-      order.processed ? 'bg-gray-100 opacity-70' : 'bg-white hover:shadow-md'
-    }`}>
+    <div
+      className={`p-6 mb-6 border rounded-xl shadow transition ${
+        order.processed ? 'bg-gray-100 opacity-70' : 'bg-white hover:shadow-md'
+      }`}
+    >
       <div className="flex justify-between items-center mb-3">
         <h4 className="text-lg font-bold text-blue-700">
           {getZone(Number(order.table))} - 테이블 {order.table} ({order.table_size}명) - {order.name}
@@ -100,31 +122,46 @@ export default function AdminOrderItem({
       </div>
 
       <ul className="text-sm space-y-1 mb-3">
-        {order.items.map((item, i) => (
-          <li key={i} className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={!!item.served_by}
-              onChange={() => handleItemToggle(i, item.served_by)}
-              disabled={order.processed}
-            />
-            <span className={item.served_by ? 'line-through text-gray-500' : ''}>
-              {item.name} {item.served_by ? `(by ${item.served_by})` : ''}
+        {parsedItems.map((item, idx) => (
+          <li key={idx} className="flex justify-between items-center">
+            <span>
+              • {item.name}
+              {item.served_by && (
+                <span className="ml-2 text-xs text-green-600">({item.served_by} 처리)</span>
+              )}
             </span>
+            {!order.processed && (
+              <button
+                onClick={() => handleItemToggle(idx, item.served_by)}
+                className={`text-xs px-2 py-1 rounded transition ${
+                  item.served_by
+                    ? 'bg-red-500 text-white hover:bg-red-600'
+                    : 'bg-green-500 text-white hover:bg-green-600'
+                }`}
+              >
+                {item.served_by ? '되돌리기' : '처리'}
+              </button>
+            )}
           </li>
         ))}
       </ul>
 
-      <div className="text-sm mb-1">총 금액: <span className="font-semibold">{order.total.toLocaleString()}원</span></div>
-      <div className="text-xs text-gray-400">주문 시각: {new Date(order.timestamp).toLocaleTimeString()}</div>
+      <div className="text-sm mb-1">
+        총 금액: <span className="font-semibold">{order.total.toLocaleString()}원</span>
+      </div>
+      <div className="text-xs text-gray-400">
+        주문 시각: {new Date(order.timestamp).toLocaleTimeString()}
+      </div>
 
       {order.image_path && (
         <img
-          src={`http://localhost:8000/${order.image_path}`}
-          alt="증빙"
-          className="w-full max-h-48 object-contain border rounded mt-3"
-        />
+        src={`${process.env.REACT_APP_API_BASE_URL}/uploads/${order.image_path.replace(/^uploads\//, '')}?v=2`}
+        crossOrigin="anonymous"
+        alt="증빙"
+      />
+      
       )}
+
 
       {!order.processed && allItemsServed && (
         <button

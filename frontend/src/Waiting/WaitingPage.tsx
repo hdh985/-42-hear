@@ -23,12 +23,14 @@ export default function WaitingPage() {
 
     const formData = new FormData();
     formData.append('name', name);
-    formData.append('phone', phone);
+    formData.append('phone', phone.replace(/\D/g, '')); // 하이픈 제거 후 전송
+
     formData.append('tableSize', partySize.toString());
     formData.append('consent', 'true');
 
     try {
-      await axios.post('http://localhost:8000/api/waiting', formData);
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/waiting`, formData);
+
       alert('등록 완료! 대기 명단에 추가되었습니다.');
       setName('');
       setPhone('');

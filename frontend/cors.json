@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://service.khuhear.com"],
+    "method": ["GET"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]

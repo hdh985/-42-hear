@@ -25,7 +25,7 @@ const bankInfo = {
   name: '이수연',
 };
 
-const SEAT_FEE_PER_PERSON = 5000;
+const SEAT_FEE_PER_PERSON = 0;
 
 const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, toggleOrder, updateCartItem }) => {
   const [orderComplete, setOrderComplete] = useState(false);
@@ -88,7 +88,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
     formData.append('consent_terms', termsAgree.toString());
 
     try {
-      const response = await axios.post('http://localhost:8000/api/orders', formData);
+      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/orders`, formData);
       setOrderNumber(`STONKS-${response.data.order_id}`);
       setOrderComplete(true);
     } catch (error) {
@@ -113,25 +113,16 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
               <span>₩{(item.price * item.quantity).toLocaleString()}</span>
             </div>
           ))}
-          <div className="flex justify-between text-sm">
+          {/* <div className="flex justify-between text-sm">
             <span>자리세 x {tableSize}명</span>
             <span>₩{seatFeeTotal.toLocaleString()}</span>
-          </div>
+          </div> */}
           <div className="flex justify-between font-bold border-t pt-2 mt-2 text-sm">
             <span>총 결제 금액</span>
             <span>₩{finalTotal.toLocaleString()}</span>
           </div>
         </div>
-        <div className="bg-blue-100 border border-blue-300 text-gray-800 rounded-lg p-3 space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>주문 코드</span>
-            <span className="font-mono">{orderNumber}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span>결제 금액</span>
-            <span>₩{finalTotal.toLocaleString()}</span>
-          </div>
-        </div>
+       
         <button onClick={toggleOrder} className="w-full py-2 bg-blue-600 text-white rounded-lg">닫기</button>
       </div>
     );
@@ -174,10 +165,10 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
             </div>
           </div>
         ))}
-        <div className="flex justify-between items-center mt-2 border-t pt-2 font-medium text-sm">
+        {/* <div className="flex justify-between items-center mt-2 border-t pt-2 font-medium text-sm">
           <span>자리세 x {tableSize}명</span>
           <span>₩{seatFeeTotal.toLocaleString()}</span>
-        </div>
+        </div> */}
         <div className="flex justify-between font-bold text-base mt-2">
           <span>총 결제 금액</span>
           <span>₩{finalTotal.toLocaleString()}</span>

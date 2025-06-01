@@ -13,12 +13,15 @@ export default function WaitingForm() {
 
     const formData = new FormData();
     formData.append('name', name);
-    formData.append('phone', phone);
+    formData.append('phone', phone.replace(/\D/g, '')); // ✅ 하이픈 제거 후 전송
+
+
+
     formData.append('tableSize', tableSize.toString());
     formData.append('consent', 'true'); // ✅ 서버에 동의 여부 전달
 
     try {
-      await axios.post('http://localhost:8000/api/waiting', formData);
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/waiting`, formData);
       alert('대기 등록 완료!');
       setName('');
       setPhone('');
@@ -36,7 +39,7 @@ export default function WaitingForm() {
 
       <input
         type="text"
-        placeholder="닉네임을 입력하세요"
+        placeholder="이름을 입력하세요"
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="input mb-2"

@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
           <div className="px-4 space-y-4">
             <div className="flex items-center">
               <div className="bg-blue-700 p-2 rounded-lg mr-2">
-                <BarChart2 size={16} />
+                  <img src="/logo.png" alt="히어컴퍼니 로고" className="w-8 h-8" />
               </div>
               <div>
                 <h3 className="font-bold">히어컴퍼니</h3>

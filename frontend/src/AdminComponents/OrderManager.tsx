@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import axios from 'axios';
 import AdminOrderItem from './AdminOrderItem';
 
@@ -11,13 +11,13 @@ interface Order {
   id: number;
   table: string;
   name: string;
-  items: OrderItem[];
+  items: OrderItem[] | string; // 문자열 가능성 고려
   total: number;
   song: string;
   image_path: string;
   timestamp: string;
   processed: boolean;
-  table_size: number;  // ✅ 추가된 필드
+  table_size: number;
 }
 
 interface Props {
@@ -35,38 +35,27 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hasMountedRef = useRef(false);
 
-const fetchOrders = async () => {
-  try {
-    const { data } = await axios.get<Order[]>('http://localhost:8000/api/orders');
+  const onRevenueUpdateRef = useRef(onRevenueUpdate);
+  const onOrderDataRef = useRef(onOrderData);
 
-    const prevOrderIds = new Set(prevOrderIdsRef.current);
-    const currentIds = data.map(o => o.id);
+  useEffect(() => {
+    onRevenueUpdateRef.current = onRevenueUpdate;
+    onOrderDataRef.current = onOrderData;
+  }, [onRevenueUpdate, onOrderData]);
 
-    const newUnprocessedOrders = data.filter(
-      (o) => !prevOrderIds.has(o.id) && !o.processed
-    );
-
-    // ✅ 최초 마운트 이후부터만 알림
-    if (hasMountedRef.current && newUnprocessedOrders.length > 0 && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(console.warn);
+  const fetchOrders = useCallback(async () => {
+    try {
+      const { data } = await axios.get<Order[]>(`${process.env.REACT_APP_API_BASE_URL}/api/orders`);
+      prevOrderIdsRef.current = data.map(o => o.id);
+      setOrders(data);
+      onRevenueUpdateRef.current?.(data.reduce((sum, o) => sum + o.total, 0));
+      onOrderDataRef.current?.(data);
+      hasMountedRef.current = true;
+    } catch (err) {
+      console.error('주문 조회 실패', err);
     }
+  }, []);
 
-    prevOrderIdsRef.current = currentIds;
-    setOrders(data);
-
-    onRevenueUpdate?.(data.reduce((sum, o) => sum + o.total, 0));
-    onOrderData?.(data);
-
-    // ✅ 첫 fetch 이후에 알람 허용
-    hasMountedRef.current = true;
-
-  } catch (err) {
-    console.error('주문 조회 실패', err);
-  }
-};
-
-  
   useEffect(() => {
     audioRef.current = new Audio('/alert.mp3');
     fetchOrders();
@@ -80,7 +69,13 @@ const fetchOrders = async () => {
         const updated: { [key: number]: number } = {};
         orders.forEach(order => {
           if (!order.processed) {
-            updated[order.id] = Math.floor((Date.now() - new Date(order.timestamp).getTime()) / 1000);
+            // ✅ 타임스탬프 UTC 파싱 (Z 붙이기)
+            const timestamp = order.timestamp.endsWith('Z')
+              ? order.timestamp
+              : order.timestamp + 'Z';
+            const orderTime = new Date(timestamp).getTime();
+            const now = Date.now();
+            updated[order.id] = Math.floor((now - orderTime) / 1000);
           }
         });
         return updated;
