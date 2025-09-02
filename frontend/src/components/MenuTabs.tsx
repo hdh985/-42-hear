@@ -1,5 +1,5 @@
 import React from 'react';
-import { Utensils, CupSoda } from 'lucide-react';
+import { Target, Star } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -14,65 +14,95 @@ interface MenuTabProps {
 
 const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) => {
   const categories: Category[] = [
-    { id: 'snack', name: '메인', icon: <Utensils size={16} /> },
-    { id: 'beverage', name: '사이드', icon: <CupSoda size={16} /> }
+    { id: 'snack', name: '현상범', icon: <Target size={18} /> },
+    { id: 'beverage', name: '부하들', icon: <Star size={18} /> }
   ];
 
   return (
-    <div className="bg-white shadow rounded-lg mb-4">
-      <div className="flex">
-        {categories.map(category => (
-          <button
-            key={category.id}
-            className={`flex-1 flex flex-col items-center py-2 ${
-              activeCategory === category.id
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-600'
-            } transition-colors`}
-            onClick={() => setActiveCategory(category.id)}
-          >
-            <div className={`p-1.5 rounded-full mb-1 ${
-              activeCategory === category.id 
-                ? 'bg-blue-500 bg-opacity-30 text-white' 
-                : 'bg-gray-100 text-gray-600'
-            }`}>
-              {category.icon}
-            </div>
-            <span className="text-sm font-medium">{category.name} 종목</span>
-            <span className="text-xs mt-0.5 opacity-75">
-              {category.id === 'snack' ? '4종' : '8종'}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      <div className="flex border-t border-gray-100 text-xs">
-        <div className="flex-1 border-r border-gray-100 p-2 flex justify-between items-center">
-          <div>
-            <h3 className="font-medium text-gray-900">{categories.find(c => c.id === activeCategory)?.name} 지수</h3>
-            <p className="text-gray-500">거래 활발한 메뉴</p>
-          </div>
-          <div className="text-right">
-            <p className="font-bold text-gray-900">
-              {activeCategory === 'snack' ? '수육' : '묵사발'}
-            </p>
-            <p className="text-green-600">
-              {activeCategory === 'snack' ? '+2.0%' : '+1.0%'}
-            </p>
-          </div>
+    <div className="mb-4">
+      {/* 컴팩트한 서부 스타일 탭 */}
+      <div className="bg-gradient-to-b from-amber-100 to-amber-50 border-3 border-amber-800 rounded-lg overflow-hidden">
+        
+        {/* 상단 헤더 - 축소 */}
+        <div className="bg-gradient-to-r from-amber-700 to-amber-600 py-2 px-3 border-b-2 border-amber-800">
+          <h2 className="text-center text-sm font-bold font-serif text-yellow-200 tracking-wide"
+              style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.7)' }}>
+            WANTED BOARD
+          </h2>
         </div>
-        <div className="flex-1 p-2 flex justify-between items-center">
-          <div>
-            <h3 className="font-medium text-gray-900">추천 매수 종목</h3>
-            <p className="text-gray-500">상승세 메뉴</p>
-          </div>
-          <div className="text-right">
-            <p className="font-bold text-gray-900">
-              {activeCategory === 'snack' ? '닭강정' : '후르츠 황도'}
-            </p>
-            <p className="text-green-600">
-              {activeCategory === 'snack' ? '+2.0%' : '+0.5%'}
-            </p>
+
+        {/* 탭 버튼들 - 간소화 */}
+        <div className="flex">
+          {categories.map((category) => (
+            <button
+              key={category.id}
+              className={`
+                flex-1 py-3 px-2 transition-all duration-300 font-serif border-r border-amber-300 last:border-r-0
+                ${activeCategory === category.id
+                  ? 'bg-amber-600 text-amber-100 shadow-inner'
+                  : 'text-amber-900 hover:bg-amber-200'
+                }
+              `}
+              onClick={() => setActiveCategory(category.id)}
+            >
+              <div className="flex flex-col items-center space-y-1">
+                <div className={`
+                  p-1.5 rounded-full border transition-all
+                  ${activeCategory === category.id 
+                    ? 'bg-amber-500 text-amber-100 border-amber-400' 
+                    : 'bg-amber-200 text-amber-800 border-amber-500'
+                  }
+                `}>
+                  {category.icon}
+                </div>
+                <div className="text-center">
+                  <h3 className="font-bold text-sm uppercase tracking-wide">
+                    {category.name}
+                  </h3>
+                  <p className="text-xs text-amber-700">
+                    {category.id === 'snack' ? '4명' : '8명'}
+                  </p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {/* 현상범 정보 패널 - 모바일 최적화 */}
+        <div className="bg-amber-700 p-3">
+          <div className="grid grid-cols-1 gap-2 text-xs">
+            
+            {/* 최고 현상범 - 한 줄로 축소 */}
+            <div className="bg-amber-950 bg-opacity-40 p-2 rounded border border-amber-600">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-yellow-400">👑</span>
+                  <span className="font-bold text-yellow-300 font-serif">최고 위험</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="font-bold text-yellow-200 font-serif">
+                    {activeCategory === 'snack' ? '빌리 더 키드' : '독 홀리데이'}
+                  </span>
+                  <span className="text-red-400 font-semibold">🔥</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* 보안관 추천 - 한 줄로 축소 */}
+            <div className="bg-amber-950 bg-opacity-40 p-2 rounded border border-amber-600">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-blue-400">⭐</span>
+                  <span className="font-bold text-yellow-300 font-serif">추천 대상</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="font-bold text-yellow-200 font-serif">
+                    {activeCategory === 'snack' ? '부치 캐시디' : '블랙 바트'}
+                  </span>
+                  <span className="text-blue-400 font-semibold">⭐</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
