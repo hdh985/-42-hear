@@ -138,18 +138,6 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, addToCart }) => {
                     {item.trend === 'up' ? '현재 도주 중으로 즉시 체포 권장합니다.' : '현재 잠복 중으로 신중한 접근이 필요합니다.'}
                   </p>
                 </div>
-                <div className="mt-2 h-8 bg-white rounded-lg overflow-hidden flex items-end p-1 shadow-sm border border-gray-300">
-                  {Array.from({ length: 12 }).map((_, i) => {
-                    const height = 5 + Math.random() * 20;
-                    return (
-                      <div
-                        key={i}
-                        className={`w-full mx-0.5 rounded-t border-t-2 ${item.trend === 'up' ? 'bg-green-200 border-green-500' : 'bg-red-200 border-red-500'}`}
-                        style={{ height: `${height}px` }}
-                      ></div>
-                    );
-                  })}
-                </div>
               </div>
             </div>
           )}

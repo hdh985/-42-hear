@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 import os
 import urllib.parse
 
+load_dotenv()
+
 DB_USER = os.getenv("DB_USER")
 DB_PASS = urllib.parse.quote_plus(os.getenv("DB_PASS"))
 DB_HOST = os.getenv("DB_HOST")

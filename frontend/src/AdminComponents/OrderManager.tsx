@@ -46,10 +46,11 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
   const fetchOrders = useCallback(async () => {
     try {
       const { data } = await axios.get<Order[]>(`${process.env.REACT_APP_API_BASE_URL}/api/orders`);
-      prevOrderIdsRef.current = data.map(o => o.id);
-      setOrders(data);
-      onRevenueUpdateRef.current?.(data.reduce((sum, o) => sum + o.total, 0));
-      onOrderDataRef.current?.(data);
+      const sorted = [...data ].sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      prevOrderIdsRef.current = sorted.map(o => o.id);
+      setOrders(sorted);
+      onRevenueUpdateRef.current?.(sorted.reduce((sum, o) => sum + o.total, 0));
+      onOrderDataRef.current?.(sorted);
       hasMountedRef.current = true;
     } catch (err) {
       console.error('주문 조회 실패', err);

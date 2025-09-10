@@ -44,16 +44,71 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
 
   const seatFeeTotal = tableSize * SEAT_FEE_PER_PERSON;
   const finalTotal = cartTotal + seatFeeTotal;
+  // 이미지 리사이즈 & 압축 (canvas)
+// 이미지 리사이즈 (긴 변 기준)
+const resizeImage = (
+  file: File,
+  maxSide = 800,        // 🔧 원하는 최대 픽셀 (긴 변 기준)
+  quality = 0.9         // JPEG일 때만 사용 (0~1)
+): Promise<File> => {
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+    img.src = objectUrl;
+
+    img.onload = () => {
+      // 원본 크기
+      let { width, height } = img;
+
+      // 축소 비율 계산 (긴 변 기준)
+      const longer = Math.max(width, height);
+      const ratio = Math.min(maxSide / longer, 1); // 더 작으면 그대로
+      const targetW = Math.round(width * ratio);
+      const targetH = Math.round(height * ratio);
+
+      // 캔버스에 그리기
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0, targetW, targetH);
+
+      // 출력 포맷 결정
+      const isPNG = file.type === 'image/png';
+      const mime = isPNG ? 'image/png' : 'image/jpeg';
+
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(objectUrl);
+          if (!blob) return resolve(file); // 실패 시 원본 반환
+
+          // 확장자 정리 (JPEG 강제 변환 시 .jpg)
+          const ext = isPNG ? '.png' : '.jpg';
+          const name = file.name.replace(/\.[^.]+$/i, ext);
+
+          resolve(new File([blob], name, { type: mime }));
+        },
+        mime,
+        isPNG ? undefined : quality
+      );
+    };
+  });
+};
 
   const handleInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setUserInfo(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setPaymentImage(file);
-  };
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // 🔧 긴 변 최대 800px (원하는 숫자로 조정: 600/500 등)
+  const resized = await resizeImage(file, 300, 0.9);
+  setPaymentImage(resized);
+};
+
 
   const copyAccount = () => {
     navigator.clipboard.writeText(bankInfo.account)
@@ -92,7 +147,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
       setOrderNumber(`WANTED-${response.data.order_id}`);
       setOrderComplete(true);
     } catch (error) {
-      alert('현상금 신청 실패');
+      alert('메뉴 신청 실패');
       console.error(error);
     }
   };
@@ -101,7 +156,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
     return (
       <div className="p-6 space-y-5 bg-gradient-to-b from-amber-50 to-amber-100 rounded-lg border-4 border-amber-800">
         <div className="text-center">
-          <h3 className="text-xl font-bold font-serif text-green-700 mb-2">현상금 신청 완료!</h3>
+          <h3 className="text-xl font-bold font-serif text-green-700 mb-2">메뉴 주문 완료!</h3>
           <div className="w-20 h-20 mx-auto bg-green-600 text-white rounded-full flex items-center justify-center border-4 border-green-800">
             <Check size={32} />
           </div>
@@ -110,7 +165,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
         
         <div className="bg-white border-4 border-amber-600 rounded-lg p-4 shadow-lg">
           <h4 className="text-base font-bold font-serif text-amber-900 mb-3 border-b-2 border-amber-300 pb-2">
-            현상금 신청 내역
+            메뉴 신청 내역
           </h4>
           {cartItems.map(item => (
             <div key={item.id} className="flex justify-between text-sm font-serif py-1">
@@ -119,7 +174,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
             </div>
           ))}
           <div className="flex justify-between font-bold border-t-2 border-amber-300 pt-2 mt-2 text-base">
-            <span className="text-amber-900 font-serif">총 현상금</span>
+            <span className="text-amber-900 font-serif">총 결제 금액</span>
             <span className="text-amber-900 font-serif">₩{finalTotal.toLocaleString()}</span>
           </div>
         </div>
@@ -137,24 +192,24 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
   return (
     <div className="p-4 text-sm space-y-4 bg-gradient-to-b from-amber-50 to-amber-100 rounded-lg border-4 border-amber-800">
       <div className="flex justify-between items-center border-b-2 border-amber-600 pb-2">
-        <h3 className="text-lg font-bold font-serif text-amber-900">현상금 신청서</h3>
+        <h3 className="text-lg font-bold font-serif text-amber-900">메뉴 주문서</h3>
         <button onClick={toggleOrder} className="text-amber-700 hover:text-amber-900">
           <X size={20} />
         </button>
       </div>
 
       <div className="bg-red-100 border-2 border-red-400 text-red-800 text-xs p-3 rounded-lg">
-        <p className="font-bold font-serif mb-2">⚠️ 보안관 주의사항</p>
+        <p className="font-bold font-serif mb-2">⚠️ 주문 주의사항</p>
         <ul className="list-disc ml-5 space-y-1 font-serif">
-          <li>현상금 신청 완료 후에는 변경, 취소, 환불이 불가합니다.</li>
-          <li>잘못 입력한 정보(테이블 번호, 현상범 선택 등)에 대한 책임은 신청자에게 있습니다.</li>
-          <li>입금자명과 송금 증빙의 명의 불일치 시 현상금 지급이 지연될 수 있습니다.</li>
+          <li>메뉴 주문 완료 후에는 변경, 취소, 환불이 불가합니다.</li>
+          <li>잘못 입력한 정보(테이블 번호, 메뉴 선택 등)에 대한 책임은 신청자에게 있습니다.</li>
+          <li>입금자명과 송금 증빙의 명의 불일치 시 메뉴 서빙이 지연될 수 있습니다.</li>
         </ul>
       </div>
 
       <div className="bg-white border-2 border-amber-400 p-3 rounded-lg">
         <h4 className="font-bold font-serif text-amber-900 mb-3 border-b border-amber-300 pb-1">
-          체포 대상 현상범
+          장바구니
         </h4>
         {cartItems.map(item => (
           <div key={item.id} className="flex justify-between items-center mb-2 p-2 bg-amber-50 rounded border border-amber-300">
@@ -189,7 +244,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
           </div>
         ))}
         <div className="flex justify-between font-bold text-base mt-3 pt-2 border-t-2 border-amber-400">
-          <span className="font-serif text-amber-900">총 현상금</span>
+          <span className="font-serif text-amber-900">총 결제 금액</span>
           <span className="font-serif text-amber-900">₩{finalTotal.toLocaleString()}</span>
         </div>
       </div>
@@ -202,7 +257,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
             name="name" 
             value={userInfo.name} 
             onChange={handleInfoChange} 
-            placeholder="보안관 이름" 
+            placeholder="입금자 성명" 
             className="w-full px-3 py-2 border-2 border-amber-400 rounded text-sm bg-white focus:border-amber-600" 
           />
         </div>
@@ -212,7 +267,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
             name="phone" 
             value={userInfo.phone} 
             onChange={handleInfoChange} 
-            placeholder="1 ~ 100" 
+            placeholder="1 ~ 50" 
             className="w-full px-3 py-2 border-2 border-amber-400 rounded text-sm bg-white focus:border-amber-600" 
           />
         </div>
@@ -220,7 +275,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
 
       {/* 인원수 */}
       <div className="mt-3">
-        <label className="text-xs font-bold font-serif text-amber-800">현상금 헌터 인원</label>
+        <label className="text-xs font-bold font-serif text-amber-800">인원</label>
         <div className="flex items-center justify-between bg-white border-2 border-amber-400 rounded px-3 py-2 mt-1">
           <button 
             type="button" 
@@ -242,7 +297,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
 
       {/* 동의 체크 */}
       <div className="flex flex-col gap-2 text-xs mt-3 p-3 bg-white border-2 border-amber-400 rounded-lg">
-        <p className="font-bold font-serif text-amber-800 mb-1">보안관 규정 동의</p>
+        <p className="font-bold font-serif text-amber-800 mb-1">부스 이용 동의</p>
         <label className="flex items-start space-x-2">
           <input
             type="checkbox"
@@ -277,7 +332,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
       <div className="bg-white border-4 border-amber-600 p-4 rounded-lg space-y-3 shadow-lg">
         <h4 className="text-base font-bold font-serif text-amber-900 flex items-center border-b-2 border-amber-300 pb-2">
           <DollarSign size={16} className="mr-2 text-amber-700" /> 
-          현상금 송금 정보
+          송금 정보
         </h4>
         <div className="space-y-2">
           <div className="flex justify-between items-center text-sm font-serif">
@@ -348,7 +403,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ cartItems, cartTotal, cartCount, 
         className="w-full py-3 bg-amber-700 hover:bg-amber-600 text-white font-bold font-serif rounded-lg disabled:opacity-50 disabled:cursor-not-allowed border-2 border-amber-800 text-base transition-colors"
         style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}
       >
-        현상금 신청하기
+        주문하기
       </button>
 
       {/* 모달 */}

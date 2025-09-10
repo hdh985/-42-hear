@@ -257,17 +257,23 @@ const App: React.FC = () => {
               <div className="text-center mb-3">
                 <h2 className="text-xl font-bold font-serif text-yellow-300 mb-2" 
                     style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
-                  🤠 서부 개척단에 합류하신 것을 환영합니다! 🤠
+                ⌜ 히어스턴스에 합류하신 것을 
+                </h2>
+                <h2 className="text-xl font-bold font-serif text-yellow-300 mb-2" 
+                    style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
+                  환영합니다!⌟ 
                 </h2>
                 <div className="flex items-center justify-center space-x-4 text-sm">
                   <div className="flex items-center bg-amber-950 bg-opacity-50 px-3 py-1 border-2 border-amber-600 border-dashed">
                     <span className="text-yellow-400 mr-1">⚖️</span>
-                    <span className="font-serif text-amber-200">법무부 (변호사단)</span>
+                    <span className="font-serif text-amber-200">보안관</span>
                   </div>
-                  <div className="text-amber-400">⎮</div>
+                  <div className="flex items-center">
+                    <span className="font-serif text-amber-200">VS </span>
+                  </div>
                   <div className="flex items-center bg-amber-950 bg-opacity-50 px-3 py-1 border-2 border-amber-600 border-dashed">
-                    <span className="text-yellow-400 mr-1">🔫</span>
-                    <span className="font-serif text-amber-200">집행부 (건슬링어)</span>
+                    <span className="text-yellow-400 mr-1">🦹🏻</span>
+                    <span className="font-serif text-amber-200">GANG </span>
                   </div>
                 </div>
               </div>

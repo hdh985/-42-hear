@@ -20,3 +20,5 @@ async def get_admin_waiting(db: Session = Depends(get_db)) -> List[dict]:
         }
         for e in entries
     ]
+
+

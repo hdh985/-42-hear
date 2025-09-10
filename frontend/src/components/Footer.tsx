@@ -46,9 +46,9 @@ const Footer: React.FC = () => {
               </div>
               <div className="text-center">
                 <h3 className="font-bold text-lg font-serif text-yellow-300" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
-                  🤠 외국어대학 학생회 주점
+                  제 42대 외국어대학 학생회 hear
                 </h3>
-                <p className="text-amber-300 text-[10px] font-serif italic">서부 개척 시대부터</p>
+                <p className="text-amber-300 text-[10px] font-serif italic">2025 가을 대동제 아델란테</p>
               </div>
             </div>
 
@@ -56,7 +56,7 @@ const Footer: React.FC = () => {
             <div className="grid grid-cols-2 gap-1 text-amber-200 text-[10px]">
               <div className="bg-amber-900 bg-opacity-40 p-1.5 border border-amber-700 flex items-center">
                 <MapPin size={10} className="mr-1 text-yellow-400 flex-shrink-0" />
-                <span className="font-serif truncate">경희대 외대 앞</span>
+                <span className="font-serif truncate">외국어대학 앞</span>
               </div>
               <div className="bg-amber-900 bg-opacity-40 p-1.5 border border-amber-700 flex items-center">
                 <Phone size={10} className="mr-1 text-yellow-400 flex-shrink-0" />
@@ -68,7 +68,7 @@ const Footer: React.FC = () => {
               </div>
               <div className="bg-amber-900 bg-opacity-40 p-1.5 border border-amber-700 flex items-center">
                 <Globe size={10} className="mr-1 text-yellow-400 flex-shrink-0" />
-                <span className="font-serif truncate">hearcompany.net</span>
+                <span className="font-serif truncate">khuhear.com</span>
               </div>
             </div>
 
@@ -78,7 +78,7 @@ const Footer: React.FC = () => {
                 onClick={() => setTermsOpen(true)} 
                 className="font-serif hover:text-yellow-300 transition-colors duration-200 border-b border-amber-500 hover:border-yellow-400"
               >
-                📜 주점 규칙
+                📜 이용 약관
               </button>
               <span className="text-amber-500">|</span>
               <button 
@@ -94,7 +94,10 @@ const Footer: React.FC = () => {
               <div className="bg-amber-950 bg-opacity-40 p-2 border border-amber-700 border-dashed">
                 <div className="text-center text-amber-300 text-[9px] font-serif leading-relaxed">
                   <p className="italic">
-                    외국어대학 학생회 직접 운영 | 수익금은 지역사회 발전에 사용
+                   *본 사이트는 외국어대학 학생회에서 직접 제작한 사이트로 모든 저작권은 외국어대학 학생회에게 있습니다.
+                  </p>
+                  <p className="italic">
+                   *행사 간 발생한 수익금은 모두 외국어대학 학생회비로 귀속됩니다.
                   </p>
                   <div className="flex items-center justify-center mt-1">
                     <div className="w-6 h-px bg-amber-600"></div>

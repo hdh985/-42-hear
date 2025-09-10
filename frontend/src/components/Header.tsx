@@ -53,19 +53,13 @@ const Header: React.FC<Props> = ({ cartCount, cartTotal, toggleOrder }) => (
         </div>
 
         {/* Decorative western elements */}
-        <div className="flex justify-center space-x-2 text-yellow-500">
-          <span className="text-lg">🤠</span>
-          <span className="text-lg">🥃</span>
-          <span className="text-lg">⭐</span>
-          <span className="text-lg">🥃</span>
-          <span className="text-lg">🤠</span>
-        </div>
+       
       </div>
 
       {/* Saloon-style scrolling banner */}
       <div className="bg-gradient-to-r from-red-800 via-red-700 to-red-800 border-t-2 border-yellow-600 overflow-hidden py-2">
         <div className="inline-flex animate-marquee whitespace-nowrap text-sm font-serif space-x-8 px-4">
-          <span className="text-yellow-300 font-bold">🍻 WELCOME TO THE WILDEST SALOON IN TOWN</span>
+          <span className="text-yellow-300 font-bold">🍻 WELCOME TO ADELANTE HEAR BOOTH</span>
           <span className="text-yellow-300 font-bold">🤠 FINEST DRINKS & GRUB SERVED DAILY</span>
           <span className="text-yellow-300 font-bold">⭐ WHERE LEGENDS ARE BORN</span>
           <span className="text-yellow-300 font-bold">🥃 COLD BEER & HOT DEALS</span>
