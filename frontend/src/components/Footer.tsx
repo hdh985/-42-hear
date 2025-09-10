@@ -45,10 +45,10 @@ const Footer: React.FC = () => {
                 <img src="/logo.png" alt="히어컴퍼니 로고" className="w-6 h-6" />
               </div>
               <div className="text-center">
-                <h3 className="font-bold text-lg font-serif text-yellow-300" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
+                <h3 className="font-bold text-lg font text-yellow-300" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.5)' }}>
                   제 42대 외국어대학 학생회 hear
                 </h3>
-                <p className="text-amber-300 text-[10px] font-serif italic">2025 가을 대동제 아델란테</p>
+                <p className="text-amber-300 text-[10px] font normal">2025 가을 아델란테 : 경희의 울림으로</p>
               </div>
             </div>
 
@@ -56,19 +56,19 @@ const Footer: React.FC = () => {
             <div className="grid grid-cols-2 gap-1 text-amber-200 text-[10px]">
               <div className="bg-amber-900 bg-opacity-40 p-1.5 border border-amber-700 flex items-center">
                 <MapPin size={10} className="mr-1 text-yellow-400 flex-shrink-0" />
-                <span className="font-serif truncate">외국어대학 앞</span>
+                <span className="font truncate">외국어대학 앞</span>
               </div>
               <div className="bg-amber-900 bg-opacity-40 p-1.5 border border-amber-700 flex items-center">
                 <Phone size={10} className="mr-1 text-yellow-400 flex-shrink-0" />
-                <span className="font-serif truncate">010-6276-0281</span>
+                <span className="font truncate">010-6276-0281</span>
               </div>
               <div className="bg-amber-900 bg-opacity-40 p-1.5 border border-amber-700 flex items-center">
                 <Mail size={10} className="mr-1 text-yellow-400 flex-shrink-0" />
-                <span className="font-serif truncate">khuhear@gmail.com</span>
+                <span className="font truncate">khuhear@gmail.com</span>
               </div>
               <div className="bg-amber-900 bg-opacity-40 p-1.5 border border-amber-700 flex items-center">
                 <Globe size={10} className="mr-1 text-yellow-400 flex-shrink-0" />
-                <span className="font-serif truncate">khuhear.com</span>
+                <span className="font truncate">khuhear.com</span>
               </div>
             </div>
 
@@ -76,14 +76,14 @@ const Footer: React.FC = () => {
             <div className="flex justify-center space-x-3 text-amber-300 text-[10px] py-1">
               <button 
                 onClick={() => setTermsOpen(true)} 
-                className="font-serif hover:text-yellow-300 transition-colors duration-200 border-b border-amber-500 hover:border-yellow-400"
+                className="font hover:text-yellow-300 transition-colors duration-200 border-b border-amber-500 hover:border-yellow-400"
               >
                 📜 이용 약관
               </button>
               <span className="text-amber-500">|</span>
               <button 
                 onClick={() => setTermsOpen(true)} 
-                className="font-serif hover:text-yellow-300 transition-colors duration-200 border-b border-amber-500 hover:border-yellow-400"
+                className="font hover:text-yellow-300 transition-colors duration-200 border-b border-amber-500 hover:border-yellow-400"
               >
                 🔒 개인정보 보호
               </button>
@@ -93,10 +93,10 @@ const Footer: React.FC = () => {
             <div className="border-t-2 border-amber-700 border-dotted pt-2">
               <div className="bg-amber-950 bg-opacity-40 p-2 border border-amber-700 border-dashed">
                 <div className="text-center text-amber-300 text-[9px] font-serif leading-relaxed">
-                  <p className="italic">
+                  <p className="normal">
                    *본 사이트는 외국어대학 학생회에서 직접 제작한 사이트로 모든 저작권은 외국어대학 학생회에게 있습니다.
                   </p>
-                  <p className="italic">
+                  <p className="normal">
                    *행사 간 발생한 수익금은 모두 외국어대학 학생회비로 귀속됩니다.
                   </p>
                   <div className="flex items-center justify-center mt-1">

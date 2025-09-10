@@ -230,63 +230,7 @@ const App: React.FC = () => {
         
         <main className="px-6 py-4 relative z-10">
           
-          {/* 환영 메시지 - 서부 스타일 */}
-          <div className="mb-6 bg-gradient-to-br from-amber-700 via-amber-800 to-amber-900 text-amber-100 border-4 border-amber-600 shadow-2xl relative overflow-hidden"
-               style={{
-                 clipPath: 'polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px))'
-               }}>
-            
-            {/* 배경 패턴 */}
-            <div 
-              className="absolute inset-0 opacity-20"
-              style={{
-                backgroundImage: `
-                  repeating-linear-gradient(
-                    45deg,
-                    transparent,
-                    transparent 10px,
-                    rgba(255,255,255,0.1) 10px,
-                    rgba(255,255,255,0.1) 20px
-                  ),
-                  radial-gradient(circle at 30% 70%, rgba(255,255,0,0.1) 0%, transparent 50%)
-                `
-              }}
-            ></div>
-
-            <div className="p-4 relative z-10">
-              <div className="text-center mb-3">
-                <h2 className="text-xl font-bold font-serif text-yellow-300 mb-2" 
-                    style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
-                ⌜ 히어스턴스에 합류하신 것을 
-                </h2>
-                <h2 className="text-xl font-bold font-serif text-yellow-300 mb-2" 
-                    style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.6)' }}>
-                  환영합니다!⌟ 
-                </h2>
-                <div className="flex items-center justify-center space-x-4 text-sm">
-                  <div className="flex items-center bg-amber-950 bg-opacity-50 px-3 py-1 border-2 border-amber-600 border-dashed">
-                    <span className="text-yellow-400 mr-1">⚖️</span>
-                    <span className="font-serif text-amber-200">보안관</span>
-                  </div>
-                  <div className="flex items-center">
-                    <span className="font-serif text-amber-200">VS </span>
-                  </div>
-                  <div className="flex items-center bg-amber-950 bg-opacity-50 px-3 py-1 border-2 border-amber-600 border-dashed">
-                    <span className="text-yellow-400 mr-1">🦹🏻</span>
-                    <span className="font-serif text-amber-200">GANG </span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* 추가 서부 장식 */}
-              <div className="flex items-center justify-center space-x-2 mt-3 pt-3 border-t-2 border-amber-600 border-dotted">
-                <div className="w-8 h-px bg-amber-500"></div>
-                <span className="text-yellow-400 text-sm">⭐ 현상금 사냥을 시작하세요 ⭐</span>
-                <div className="w-8 h-px bg-amber-500"></div>
-              </div>
-            </div>
-          </div>
-
+          
           <MenuTab activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
 
           <div className="space-y-6">

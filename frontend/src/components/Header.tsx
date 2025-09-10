@@ -26,14 +26,12 @@ const Header: React.FC<Props> = ({ cartCount, cartTotal, toggleOrder }) => (
               </div>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-yellow-300 font-serif tracking-wide drop-shadow-lg">
-                히어스턴스
-              </h1>
-              <h2 className="text-lg font-bold text-yellow-400 font-serif tracking-wider drop-shadow-md">
-                Heart Shot
+              
+              <h2 className="text-lg font-bold text-yellow-400 font tracking-wider drop-shadow-md">
+                HEART SHOT
               </h2>
-              <p className="text-xs text-amber-200 font-serif italic">
-                Est. 1875 • Fine Spirits & Community
+              <p className="text-xs text-amber-200 font-bold">
+                제42대 외국어대학 학생회 hear
               </p>
             </div>
           </div>
@@ -58,12 +56,14 @@ const Header: React.FC<Props> = ({ cartCount, cartTotal, toggleOrder }) => (
 
       {/* Saloon-style scrolling banner */}
       <div className="bg-gradient-to-r from-red-800 via-red-700 to-red-800 border-t-2 border-yellow-600 overflow-hidden py-2">
-        <div className="inline-flex animate-marquee whitespace-nowrap text-sm font-serif space-x-8 px-4">
-          <span className="text-yellow-300 font-bold">🍻 WELCOME TO ADELANTE HEAR BOOTH</span>
-          <span className="text-yellow-300 font-bold">🤠 FINEST DRINKS & GRUB SERVED DAILY</span>
-          <span className="text-yellow-300 font-bold">⭐ WHERE LEGENDS ARE BORN</span>
-          <span className="text-yellow-300 font-bold">🥃 COLD BEER & HOT DEALS</span>
-          <span className="text-yellow-300 font-bold">🎰 FORTUNE FAVORS THE BOLD</span>
+        <div className="inline-flex animate-marquee whitespace-nowrap text-sm font space-x-8 px-4">
+          <span className="text-yellow-300 font-bold">🇺🇸 WELCOME TO THE HEART SHOT!</span>
+          <span className="text-yellow-300 font-bold">🇨🇳 欢迎来到 HEART SHOT！</span>
+          <span className="text-yellow-300 font-bold">🇫🇷 Bienvenue au HEART SHOT !</span>
+          <span className="text-yellow-300 font-bold">🇷🇺 Добро пожаловать в HEART SHOT!</span>
+          <span className="text-yellow-300 font-bold">🇪🇸 ¡Bienvenidos a HEART SHOT!</span>
+          <span className="text-yellow-300 font-bold">🇰🇷 HEART SHOT 부스에 온 것을 환영합니다.</span>
+          <span className="text-yellow-300 font-bold">🇯🇵 HEART SHOTへようこそ！</span>
         </div>
       </div>
 

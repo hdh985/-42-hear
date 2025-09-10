@@ -14,8 +14,8 @@ interface MenuTabProps {
 
 const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) => {
   const categories: Category[] = [
-    { id: 'snack', name: '현상범', icon: <Target size={18} /> },
-    { id: 'beverage', name: '부하들', icon: <Star size={18} /> }
+    { id: 'snack', name: '메인 메뉴', icon: <Target size={18} /> },
+    { id: 'beverage', name: '사이드 메뉴', icon: <Star size={18} /> }
   ];
 
   return (
@@ -37,7 +37,7 @@ const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) 
             <button
               key={category.id}
               className={`
-                flex-1 py-3 px-2 transition-all duration-300 font-serif border-r border-amber-300 last:border-r-0
+                flex-1 py-3 px-2 transition-all duration-300 font border-r border-amber-300 last:border-r-0
                 ${activeCategory === category.id
                   ? 'bg-amber-600 text-amber-100 shadow-inner'
                   : 'text-amber-900 hover:bg-amber-200'
@@ -77,10 +77,10 @@ const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <span className="text-yellow-400">👑</span>
-                  <span className="font-bold text-yellow-300 font-serif">최고 위험</span>
+                  <span className="font-bold text-yellow-300 font">최고 위험</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="font-bold text-yellow-200 font-serif">
+                  <span className="font-bold text-yellow-200 font">
                     {activeCategory === 'snack' ? '빌리 더 키드' : '독 홀리데이'}
                   </span>
                   <span className="text-red-400 font-semibold">🔥</span>
@@ -93,10 +93,10 @@ const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) 
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <span className="text-blue-400">⭐</span>
-                  <span className="font-bold text-yellow-300 font-serif">추천 대상</span>
+                  <span className="font-bold text-yellow-300 font">추천 대상</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="font-bold text-yellow-200 font-serif">
+                  <span className="font-bold text-yellow-200 font">
                     {activeCategory === 'snack' ? '부치 캐시디' : '블랙 바트'}
                   </span>
                   <span className="text-blue-400 font-semibold">⭐</span>
