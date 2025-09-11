@@ -25,7 +25,7 @@ jobs:
         working-directory: ./frontend
         env:
           CI: false
-          REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+          REACT_APP_API_BASE_URL: ${{ secrets.REACT_APP_API_BASE_URL }}
           REACT_APP_SOCKET_URL: ${{ secrets.REACT_APP_SOCKET_URL }}
           REACT_APP_ENVIRONMENT: production
           REACT_APP_NAME: hear App
