@@ -143,6 +143,58 @@ const App: React.FC = () => {
         volatility: '중간',
         investment: '수배 중',
         isSoldOut: false
+      },
+      {
+        id: 'beverage-005',
+        title: "제로콜라",
+        description: '',
+        price: 3000,
+        change: '-1.2%',
+        trend: 'down' as const,
+        marketCap: '$18M',
+        volume: '낮음',
+        volatility: '중간',
+        investment: '수배 중',
+        isSoldOut: false
+      },
+      {
+        id: 'beverage-006',
+        title: "콜라",
+        description: '',
+        price: 3000,
+        change: '-1.2%',
+        trend: 'down' as const,
+        marketCap: '$18M',
+        volume: '낮음',
+        volatility: '중간',
+        investment: '수배 중',
+        isSoldOut: false
+      },
+      {
+        id: 'beverage-007',
+        title: "사이다",
+        description: '토마토에 설탕 추가',
+        price: 3000,
+        change: '-1.2%',
+        trend: 'down' as const,
+        marketCap: '$18M',
+        volume: '낮음',
+        volatility: '중간',
+        investment: '수배 중',
+        isSoldOut: false
+      },
+      {
+        id: 'beverage-004',
+        title: "물",
+        description: '토마토에 설탕 추가',
+        price: 2000,
+        change: '-1.2%',
+        trend: 'down' as const,
+        marketCap: '$18M',
+        volume: '낮음',
+        volatility: '중간',
+        investment: '수배 중',
+        isSoldOut: false
       }
     ]);
   }, []);
