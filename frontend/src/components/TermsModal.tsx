@@ -86,9 +86,9 @@ const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
 
         {activeTab === 'privacy' && (
           <div className="whitespace-pre-wrap leading-relaxed text-gray-800 text-xs">
-{`🎯 [히어스턴스] 개인정보처리방침 (축제 부스 웹 주문 서비스)
+{`🎯 [HEART SHOT] 개인정보처리방침 (축제 부스 웹 주문 서비스)
 
-히어스턴스는 이용자의 개인정보를 매우 소중히 여기며, 관련 법령에 따라 다음과 같은 방침을 따릅니다.
+HEART SHOT은 이용자의 개인정보를 매우 소중히 여기며, 관련 법령에 따라 다음과 같은 방침을 따릅니다.
 
 1. 수집 항목
 - 필수 항목: 이름, 전화번호, 송금내역(이미지), 테이블 번호
@@ -113,7 +113,7 @@ const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
 - 문의: khuhear@gmail.com
 
 7. 문의처
-- 히어스턴스 운영팀 (경희대학교 외국어대학 학생회)
+-HEART SHOT 운영팀 (경희대학교 외국어대학 학생회)
 - 이메일: khuhear@gmail.com / 전화: 010-6276-0281
 
 부칙

@@ -25,7 +25,7 @@ const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) 
         
         {/* 상단 헤더 - 축소 */}
         <div className="bg-gradient-to-r from-amber-700 to-amber-600 py-2 px-3 border-b-2 border-amber-800">
-          <h2 className="text-center text-sm font-bold font-serif text-yellow-200 tracking-wide"
+          <h2 className="text-center text-sm font-bold font text-yellow-200 tracking-wide"
               style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.7)' }}>
             WANTED BOARD
           </h2>
