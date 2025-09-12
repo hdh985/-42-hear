@@ -18,6 +18,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/api/health")
+def api_health():
+    # 절대 인증/리다이렉트/DB의존 넣지 말 것 → 항상 200
+    return {"status": "ok"}
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
