@@ -53,12 +53,23 @@ const Header: React.FC<Props> = ({ cartCount, cartTotal, toggleOrder }) => (
       {/* 서부식 스크롤 배너 */}
       <div className="bg-gradient-to-r from-[#5a1a16] via-[#76231c] to-[#5a1a16] border-t-2 border-yellow-600 overflow-hidden py-2">
         <div className="inline-flex animate-marquee whitespace-nowrap text-sm font space-x-8 px-4">
-          <span className="text-yellow-300 font-bold">🤠 WELCOME TO THE HEART SHOT!</span>
-          <span className="text-yellow-300 font-bold">🍷 Bienvenue au HEART SHOT !</span>
-          <span className="text-yellow-300 font-bold">🔥 HEART SHOTへようこそ！</span>
-          <span className="text-yellow-300 font-bold">🎶 HEART SHOT 부스에 온 것을 환영합니다.</span>
+          {/* Korean */}
+          <span className="text-yellow-300 font-bold">🇰🇷 HEART SHOT 부스에 오신 것을 환영합니다!</span>
+          {/* Chinese (Simplified) */}
+          <span className="text-yellow-300 font-bold">🇨🇳 欢迎来到 HEART SHOT 展位！</span>
+          {/* Japanese */}
+          <span className="text-yellow-300 font-bold">🇯🇵 HEART SHOTへようこそ！</span>
+          {/* English */}
+          <span className="text-yellow-300 font-bold">🇺🇸 WELCOME TO THE HEART SHOT!</span>
+          {/* French */}
+          <span className="text-yellow-300 font-bold">🇫🇷 Bienvenue au HEART SHOT !</span>
+          {/* Spanish */}
+          <span className="text-yellow-300 font-bold">🇪🇸 ¡Bienvenidos a HEART SHOT!</span>
+          {/* Russian */}
+          <span className="text-yellow-300 font-bold">🇷🇺 Добро пожаловать в HEART SHOT!</span>
         </div>
       </div>
+
 
       {/* 하단 금색 보더 */}
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600"></div>
