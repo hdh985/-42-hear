@@ -235,7 +235,7 @@ const App: React.FC = () => {
 
           <div className="space-y-6">
             {filteredMenu.length === 0 && (
-              <div className="text-center p-8 text-amber-700 font-serif">
+              <div className="text-center p-8 text-amber-700 font">
                 <p>현재 선택된 카테고리에 현상범이 없습니다.</p>
                 <p className="text-sm mt-2">전체 메뉴 개수: {menuItems.length}</p>
                 <p className="text-sm">필터된 메뉴: {filteredMenu.length}</p>
@@ -289,13 +289,13 @@ const App: React.FC = () => {
                 <div className="flex flex-col">
                   <div className="flex items-center space-x-2 mb-1">
                     <span className="text-yellow-300 text-lg">🎯</span>
-                    <span className="text-amber-200 text-sm font-serif font-semibold">
-                      총 {cartCount}명 체포
+                    <span className="text-amber-200 text-sm font font-semibold">
+                      총 {cartCount}개 담음
                     </span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <span className="text-green-400 text-sm">💰</span>
-                    <span className="text-green-300 font-bold text-xl font-serif">
+                    <span className="text-green-300 font-bold text-xl font">
                       ₩{cartTotal.toLocaleString()}
                     </span>
                   </div>
@@ -303,13 +303,13 @@ const App: React.FC = () => {
                 
                 <button
                   onClick={toggleOrder}
-                  className="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-amber-100 font-bold font-serif px-6 py-3 border-4 border-amber-700 hover:border-amber-600 shadow-lg transition-all duration-200 transform hover:-translate-y-1 hover:shadow-xl uppercase tracking-wide"
+                  className="bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-amber-100 font-bold fontㄴ px-6 py-3 border-4 border-amber-700 hover:border-amber-600 shadow-lg transition-all duration-200 transform hover:-translate-y-1 hover:shadow-xl uppercase tracking-wide"
                   style={{
                     clipPath: 'polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)',
                     textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
                   }}
                 >
-                  현상금 수령
+                  주문하기
                 </button>
               </div>
 
