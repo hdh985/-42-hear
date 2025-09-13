@@ -84,7 +84,7 @@ const App: React.FC = () => {
         id: 'snack-004',
         category : 'snack',
         title: "웰컴 투 '에그인헬'",
-        description: "지옥같은 맛",
+        description: "지옥에서도 잘 팔릴 카우보이 픽",
         price: 20000,
         change: '+8.7%',
         trend: 'up' as const,
