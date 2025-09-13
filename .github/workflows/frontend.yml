@@ -1,4 +1,4 @@
-name: hear frontend deoploy
+name: hear frontend deploy
 
 on:
   push:
@@ -38,31 +38,12 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY_JSON }}
 
-      # (선택) 이전 산출물 정리: 캐시 꼬임/유물 방지
-      # - name: Set up gcloud
-      #   uses: google-github-actions/setup-gcloud@v2
-      #
-      # - name: Clean old objects
-      #   run: |
-      #     gcloud storage rm -r "gs://${{ secrets.GCP_FRONTEND_BUCKET }}/static/**" || true
-      #     gcloud storage rm "gs://${{ secrets.GCP_FRONTEND_BUCKET }}/index.html" || true
-
-      # index.html만 no-store (따옴표 없이!)
-      - name: Upload index.html (no-store)
+      # build 전체 업로드 (index.html 포함)
+      - name: Upload build folder
         uses: google-github-actions/upload-cloud-storage@v2
         with:
-          path: ./frontend/build/index.html
+          path: ./frontend/build
           destination: ${{ secrets.GCP_FRONTEND_BUCKET }}
           parent: false
           headers: |
-            cache-control: no-store
-
-      # 정적 자산은 1년 캐시 + immutable
-      - name: Upload static assets (long cache)
-        uses: google-github-actions/upload-cloud-storage@v2
-        with:
-          path: ./frontend/build/static
-          destination: ${{ secrets.GCP_FRONTEND_BUCKET }}/static
-          parent: false
-          headers: |
-            cache-control: public, max-age=31536000, immutable
+            cache-control: public, max-age=3600
