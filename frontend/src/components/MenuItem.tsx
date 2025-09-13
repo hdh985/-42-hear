@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown, PlusCircle, Check, Info, BarChart3 } from 'lu
 
 export interface MenuItemType {
   id: string;
+  category: 'snack' | 'beverage';
   title: string;
   description: string;
   price: number;
@@ -24,14 +25,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, addToCart }) => {
   const [added, setAdded] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
 
-  const renderTrendIcon = (trend: 'up' | 'down') => {
-    return trend === 'up' ? (
-      <TrendingUp size={16} className="text-yellow-200" />
-    ) : (
-      <TrendingDown size={16} className="text-red-200" />
-    );
-  };
-
+ 
   const getInvestmentColor = (investment: string) => {
     switch (investment) {
       case '즉시 체포': return 'bg-yellow-800 text-yellow-200 border border-yellow-600';
@@ -45,62 +39,73 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, addToCart }) => {
 
   const handleAddToCart = () => {
     if (item.isSoldOut) return;
-
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
     addToCart(item);
   };
 
   return (
-    <div className={`bg-white rounded-xl shadow-md overflow-hidden mb-4 transition-all hover:shadow-lg border-2 border-amber-300 ${item.isSoldOut ? 'opacity-70' : ''}`}>
-      <div className="p-4">
+    <div
+      className={`bg-amber-50 rounded-xl shadow-md overflow-hidden mb-4 border-4 border-[#76231c] transition-all hover:shadow-xl relative ${
+        item.isSoldOut ? 'opacity-70' : ''
+      }`}
+    >
+      {/* 낡은 종이 질감 효과 (파일 없이 CSS로 표현) */}
+      <div
+        className="absolute inset-0 opacity-15"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 40%),
+            radial-gradient(circle at 80% 40%, rgba(0, 0, 0, 0.05) 0%, transparent 50%),
+            linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+            linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)
+          `,
+          backgroundSize: '100px 100px, 120px 120px, 40px 40px, 40px 40px',
+          backgroundBlendMode: 'multiply'
+        }}
+      ></div>
+
+      <div className="p-4 relative z-10">
         <div className="flex flex-col space-y-3">
+          {/* 타이틀 */}
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="font-bold text-gray-900 text-lg">{item.title}</h3>
-              <p className="text-gray-700 text-sm mt-0.5 font-medium">{item.description}</p>
+              <h3 className="font-extrabold text-[#3d110f] text-lg tracking-wide drop-shadow-sm">
+                {item.title}
+              </h3>
+              <p className="text-[#5a1a16] text-sm mt-0.5 font-medium">{item.description}</p>
             </div>
-            <div className={`flex items-center px-2 py-1 rounded-lg shadow-sm border-2 ${item.trend === 'up' ? 'bg-green-100 border-green-400 text-green-800' : 'bg-red-100 border-red-400 text-red-800'}`}>
-              {renderTrendIcon(item.trend)}
-              <span className="ml-1 font-bold text-sm">{item.change}</span>
-            </div>
+           
           </div>
 
+          {/* 현상금 */}
           <div className="flex justify-between items-center">
             <div>
-              <span className="text-xs text-gray-600 font-semibold">현상금</span>
-              <p className="font-bold text-gray-900 text-lg">₩{item.price.toLocaleString()}</p>
-            </div>
-            <div className="flex space-x-1">
-              {item.investment === '즉시 체포' && (
-                <span className="inline-flex items-center bg-red-600 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-sm border border-red-700">
-                  🔥 최고 위험
-                </span>
-              )}
-              {item.volatility === '낮음' && (
-                <span className="inline-flex items-center bg-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-sm border border-blue-700">
-                  안전함
-                </span>
-              )}
+              <span className="text-xs text-[#5a1a16] font-semibold">현상금</span>
+              <p className="font-extrabold text-[#76231c] text-xl drop-shadow-md">
+                ₩{item.price.toLocaleString()}
+              </p>
             </div>
           </div>
 
+          {/* 버튼 영역 */}
           <div className="flex justify-end items-center space-x-2">
-            <button onClick={() => setShowDetails(!showDetails)} className="p-1.5 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors flex-shrink-0 border border-gray-400">
+            <button
+              onClick={() => setShowDetails(!showDetails)}
+              className="p-1.5 rounded-full bg-[#76231c] text-amber-100 hover:bg-[#5a1a16] transition-colors flex-shrink-0 border border-yellow-600 shadow-sm"
+            >
               <Info size={16} />
             </button>
             <button
               onClick={handleAddToCart}
-              className={`flex items-center justify-center rounded-full px-5 py-2 text-sm font-bold border-2
+              className={`flex items-center justify-center rounded-full px-5 py-2 text-sm font-bold border-2 transition-all duration-200 ease-in-out
                 ${
                   item.isSoldOut
                     ? 'bg-gray-400 text-gray-700 border-gray-500 cursor-not-allowed'
                     : added
-                      ? 'bg-green-600 text-white border-green-700 shadow-md'
-                      : 'bg-amber-600 text-white border-amber-700 hover:bg-amber-500 hover:shadow-lg'
-                } 
-                transition-all duration-200 ease-in-out
-              `}
+                    ? 'bg-green-700 text-white border-green-800 shadow-md'
+                    : 'bg-[#76231c] text-amber-100 border-yellow-600 hover:bg-[#5a1a16] hover:shadow-lg'
+                }`}
               disabled={item.isSoldOut}
             >
               {added ? (
@@ -108,34 +113,39 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, addToCart }) => {
               ) : (
                 <PlusCircle size={18} className="mr-2" />
               )}
-              {item.isSoldOut ? '체포 완료' : added ? '추가됨' : '현상범 체포'}
+              {item.isSoldOut ? '담기 완료' : added ? '추가됨' : '메뉴 담기'}
             </button>
           </div>
 
+          {/* 상세 정보 */}
           {showDetails && (
-            <div className="mt-3 pt-3 border-t-2 border-gray-200">
-              <div className="bg-gray-50 rounded-lg p-3 border-2 border-gray-300">
-                <h4 className="font-bold text-sm text-gray-900 mb-2 flex items-center">
-                  <BarChart3 size={16} className="mr-1.5 text-amber-600" />
+            <div className="mt-3 pt-3 border-t-2 border-yellow-700">
+              <div className="bg-amber-100 rounded-lg p-3 border-2 border-yellow-700">
+                <h4 className="font-bold text-sm text-[#3d110f] mb-2 flex items-center">
+                  <BarChart3 size={16} className="mr-1.5 text-yellow-500" />
                   현상범 정보
                 </h4>
                 <div className="grid grid-cols-2 gap-3 mb-3">
-                  <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-300">
-                    <p className="text-gray-600 text-xs font-semibold">총 현상금</p>
-                    <p className="font-bold text-sm text-gray-900">{item.marketCap}</p>
+                  <div className="bg-amber-50 p-2 rounded-lg shadow-sm border border-yellow-600">
+                    <p className="text-xs font-semibold text-[#5a1a16]">총 현상금</p>
+                    <p className="font-bold text-sm text-[#76231c]">{item.marketCap}</p>
                   </div>
-                  <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-300">
-                    <p className="text-gray-600 text-xs font-semibold">위험 등급</p>
-                    <p className="font-bold text-sm text-gray-900">{item.volatility}</p>
+                  <div className="bg-amber-50 p-2 rounded-lg shadow-sm border border-yellow-600">
+                    <p className="text-xs font-semibold text-[#5a1a16]">위험 등급</p>
+                    <p className="font-bold text-sm text-[#76231c]">{item.volatility}</p>
                   </div>
                 </div>
-                <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-300">
+                <div className="bg-amber-50 p-2 rounded-lg shadow-sm border border-yellow-600">
                   <div className="flex justify-between items-center">
-                    <p className="text-gray-600 text-xs font-semibold">보안관 의견</p>
-                    <p className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getInvestmentColor(item.investment)}`}>{item.investment}</p>
+                    <p className="text-xs font-semibold text-[#5a1a16]">보안관 의견</p>
+                    <p className={`text-xs font-bold px-2 py-0.5 rounded-full border ${getInvestmentColor(item.investment)}`}>
+                      {item.investment}
+                    </p>
                   </div>
-                  <p className="text-gray-700 text-xs mt-1 font-medium">
-                    {item.trend === 'up' ? '현재 도주 중으로 즉시 체포 권장합니다.' : '현재 잠복 중으로 신중한 접근이 필요합니다.'}
+                  <p className="text-[#3d110f] text-xs mt-1 font-medium">
+                    {item.trend === 'up'
+                      ? '현재 도주 중으로 즉시 체포 권장합니다.'
+                      : '현재 잠복 중으로 신중한 접근이 필요합니다.'}
                   </p>
                 </div>
               </div>

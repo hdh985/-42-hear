@@ -160,7 +160,7 @@ const resizeImage = (
           <div className="w-20 h-20 mx-auto bg-green-600 text-white rounded-full flex items-center justify-center border-4 border-green-800">
             <Check size={32} />
           </div>
-          <p className="text-sm text-amber-800 font mt-3">입금 확인 후 현상범 체포를 시작합니다.</p>
+          <p className="text-sm text-amber-800 font mt-3">입금 확인 후 메뉴 서빙을 시작합니다.</p>
         </div>
         
         <div className="bg-white border-4 border-amber-600 rounded-lg p-4 shadow-lg">
@@ -183,7 +183,7 @@ const resizeImage = (
           onClick={toggleOrder} 
           className="w-full py-3 bg-amber-700 hover:bg-amber-600 text-white font-bold font rounded-lg border-2 border-amber-800 transition-colors"
         >
-          보안관 사무소 닫기
+          닫기
         </button>
       </div>
     );

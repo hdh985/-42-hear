@@ -40,6 +40,7 @@ const App: React.FC = () => {
       // 고액 현상범 (snack)
       {
         id: 'snack-001',
+        category : 'snack',
         title: "밤이 되었습니다 '닭강정'",
         description: '매콤 달콤 닭강정',
         price: 20000,
@@ -53,6 +54,7 @@ const App: React.FC = () => {
       },
       {
         id: 'snack-002',
+        category : 'snack',
         title: "대포 ‘알밥주먹밥’ 소리에 눈이 번 ‘떡갈비’",
         description: '대포소리만큼 맛있는 떡갈비',
         price: 22000,
@@ -66,6 +68,7 @@ const App: React.FC = () => {
       },
       {
         id: 'snack-003',
+        category : 'snack',
         title: "두두두두 ‘두부김치’",
         description: '이것은 입에서 나는 소리가 아니여 두부 김치',
         price: 18000,
@@ -79,6 +82,7 @@ const App: React.FC = () => {
       },
       {
         id: 'snack-004',
+        category : 'snack',
         title: "웰컴 투 '에그인헬'",
         description: "지옥같은 맛",
         price: 20000,
@@ -94,6 +98,7 @@ const App: React.FC = () => {
       // 소액 현상범 (beverage)
       {
         id: 'beverage-001',
+        category : 'beverage',
         title: "’계란 탕‘탕탕",
         description: '부치 캐시디의 오른팔, 빠른 총잡이',
         price: 10000,
@@ -107,6 +112,7 @@ const App: React.FC = () => {
       },
       {
         id: 'beverage-002',
+        category : 'beverage',
         title: "강도가 훔쳐간 ‘황도’",
         description: '눈물도 훔치며 먹을 맛',
         price: 10000,
@@ -120,6 +126,7 @@ const App: React.FC = () => {
       },
       {
         id: 'beverage-003',
+        category : 'beverage',
         title: "’묵사발‘을 내주겠어.",
         description: '완전한 묵사발',
         price: 15000,
@@ -133,6 +140,7 @@ const App: React.FC = () => {
       },
       {
         id: 'beverage-004',
+        category : 'beverage',
         title: "[속보] ’설탕‘ 공장에서 ’토메이토‘ 발생",
         description: '토마토에 설탕 추가',
         price: 10000,
@@ -146,6 +154,7 @@ const App: React.FC = () => {
       },
       {
         id: 'beverage-005',
+        category : 'beverage',
         title: "제로콜라",
         description: '',
         price: 3000,
@@ -159,6 +168,7 @@ const App: React.FC = () => {
       },
       {
         id: 'beverage-006',
+        category : 'beverage',
         title: "콜라",
         description: '',
         price: 3000,
@@ -172,8 +182,9 @@ const App: React.FC = () => {
       },
       {
         id: 'beverage-007',
+        category : 'beverage',
         title: "사이다",
-        description: '토마토에 설탕 추가',
+        description: '',
         price: 3000,
         change: '-1.2%',
         trend: 'down' as const,
@@ -184,9 +195,10 @@ const App: React.FC = () => {
         isSoldOut: false
       },
       {
-        id: 'beverage-004',
+        id: 'beverage-008',
+        category : 'beverage',
         title: "물",
-        description: '토마토에 설탕 추가',
+        description: '',
         price: 2000,
         change: '-1.2%',
         trend: 'down' as const,
