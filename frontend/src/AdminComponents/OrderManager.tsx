@@ -54,7 +54,7 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
     try {
       setIsFetching(true);
       const { data } = await axios.get<Order[]>(`${process.env.REACT_APP_API_BASE_URL}/api/orders`);
-      const sorted = [...data].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      const sorted = [...data].sort((a, b) => new Date(b.timestamp).getTime() - new Date(b.timestamp).getTime());
 
       // Compute revenue + publish raw
       onRevenueUpdateRef.current?.(sorted.reduce((sum, o) => sum + o.total, 0));
