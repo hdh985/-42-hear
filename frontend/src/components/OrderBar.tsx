@@ -32,7 +32,7 @@ const OrderBar: React.FC<OrderBarProps> = ({ cartCount, cartTotal, onOpen }) => 
           <div className="flex flex-col">
             <div className="mb-0.5 flex items-center gap-2">
               <span className="text-lg text-yellow-300" aria-hidden>
-                🎯
+                🛒
               </span>
               <span className="text-sm font-medium text-amber-200" aria-live="polite">
                 총 {cartCount}개 담음
