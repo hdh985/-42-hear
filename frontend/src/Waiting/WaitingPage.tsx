@@ -164,7 +164,7 @@ export default function WaitingPage() {
 
         {/* Footer Ribbon */}
         <div className="bg-[#76231c] text-yellow-200 text-center text-[11px] py-2 tracking-widest uppercase">
-          ★ 행사간 발생한 수익금은 모두 학생회비로 귀속됩니다 ★
+          ★ 호출시 부재할 경우 다음 순서로 넘어갑니다. ★
         </div>
       </div>
 
