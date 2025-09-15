@@ -40,7 +40,7 @@ const OrderBar: React.FC<OrderBarProps> = ({ cartCount, cartTotal, onOpen }) => 
             </div>
             <div className="flex items-center gap-1">
               <span className="text-sm text-green-300" aria-hidden>
-                💰
+                
               </span>
               <span className="tabular-nums text-xl font-extrabold tracking-wide text-green-200 drop-shadow">
                 ₩{cartTotal.toLocaleString()}
