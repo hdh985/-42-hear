@@ -223,7 +223,7 @@ export default function OrderManager({ onRevenueUpdate, onOrderData, adminName }
           <div className="p-6 border rounded-xl text-center text-gray-500 bg-slate-50">대기 중인 주문 없음</div>
         ) : (
           pendingOrders
-            .sort((a, b) => (elapsedTimes[b.id] || 0) - (elapsedTimes[a.id] || 0)) // 오래 기다린 순
+
             .map(order => (
               <AdminOrderItem
                 key={order.id}
