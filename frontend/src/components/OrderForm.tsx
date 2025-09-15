@@ -317,7 +317,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
               name="phone"
               value={userInfo.phone}
               onChange={handleInfoChange}
-              placeholder="1 ~ 50"
+              placeholder="1 ~ 64"
               inputMode="numeric"
               className="w-full rounded border-2 border-amber-400 bg-white px-3 py-2 text-sm placeholder:text-amber-600/60 focus:border-amber-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
             />

@@ -43,7 +43,7 @@ const App: React.FC = () => {
       {
         id: 'snack-001',
         category: 'snack',
-        title: "밤이 되었습니다 '닭강정'",
+        title: "밤이 되었습니'닭강정'",
         description: '보안관도 밤에 벌떡 일어나 먹을 맛',
         price: 20000,
         change: '+15.2%',
