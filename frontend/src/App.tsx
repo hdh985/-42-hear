@@ -73,7 +73,7 @@ const App: React.FC = () => {
         category: 'snack',
         title: "두두두두 ‘두부김치’",
         description: '이것은 입에서 나는 소리가 아니여 두부 김치',
-        price: 18000,
+        price: 10000,
         change: '-3.5%',
         trend: 'down',
         marketCap: '$35M',
