@@ -57,7 +57,7 @@ const App: React.FC = () => {
       {
         id: 'snack-002',
         category: 'snack',
-        title: "(판매종료)",
+        title: "대포'알밥주먹밥'소리에 눈이 먼'떡갈비'",
         description: '대포소리만큼 맛있는 떡갈비',
         price: 22000,
         change: '+12.8%',
@@ -85,7 +85,7 @@ const App: React.FC = () => {
       {
         id: 'snack-004',
         category: 'snack',
-        title: "웰컴 투 '에그인헬'(판매종료)",
+        title: "웰컴 투 '에그인헬'",
         description: '지옥에서도 잘 팔릴 카우보이 픽',
         price: 20000,
         change: '+8.7%',
