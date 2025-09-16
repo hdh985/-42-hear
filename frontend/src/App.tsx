@@ -66,7 +66,7 @@ const App: React.FC = () => {
         volume: '높음',
         volatility: '중간',
         investment: '체포 권장',
-        isSoldOut: true,
+        isSoldOut: false,
       },
       {
         id: 'snack-003',
@@ -94,7 +94,7 @@ const App: React.FC = () => {
         volume: '중간',
         volatility: '중간',
         investment: '체포 권장',
-        isSoldOut: true,
+        isSoldOut: false,
       },
 
       // 소액 현상범 (beverage)
