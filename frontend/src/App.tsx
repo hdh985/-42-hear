@@ -59,7 +59,7 @@ const App: React.FC = () => {
         category: 'snack',
         title: "대포'알밥주먹밥'소리에 눈이 먼'떡갈비'",
         description: '대포소리만큼 맛있는 떡갈비',
-        price: 22000,
+        price: 11000,
         change: '+12.8%',
         trend: 'up',
         marketCap: '$45M',
