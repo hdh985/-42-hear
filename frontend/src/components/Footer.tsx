@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
           <div className="px-4">
             <div className="mb-3 flex items-center justify-center gap-2">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-800/70 border border-sky-600/50 text-[11px] font-semibold">
-                ✈️ ICN → WORLD TOUR BAR
+                ✈️ ICN → WORLD TOUR
               </span>
               <span className="text-[11px] text-sky-300/90">Arrivals • Night Booth</span>
             </div>
@@ -60,7 +60,7 @@ const Footer: React.FC = () => {
                 <h3 className="text-lg font-extrabold tracking-wider text-amber-300 drop-shadow">
                   제42대 외국어대학 학생회 hear
                 </h3>
-                <p className="text-[10px] text-sky-200/90">2025 가을 아델란테 • 경희의 울림으로</p>
+                <p className="text-[10px] text-sky-200/90">2025 외국어대학 외대제 • 부제 정해줘</p>
               </div>
             </div>
           </div>
