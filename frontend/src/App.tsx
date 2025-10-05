@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import MenuTab from './components/MenuTabs';
+import MenuTab from './components/MenuTabs'; // 기존 경로 유지
 import MenuItem, { MenuItemType } from './components/MenuItem';
 import CartModal from './components/CartModal';
 import OrderBar from './components/OrderBar';
@@ -36,10 +36,10 @@ const App: React.FC = () => {
     );
   };
 
-  // Demo data (unchanged semantics)
+  // Demo data
   useEffect(() => {
     setMenuItems([
-      // 고액 현상범 (snack)
+      // snack
       {
         id: 'snack-001',
         category: 'snack',
@@ -97,7 +97,7 @@ const App: React.FC = () => {
         isSoldOut: false,
       },
 
-      // 소액 현상범 (beverage)
+      // beverage
       {
         id: 'beverage-001',
         category: 'beverage',
@@ -164,51 +164,64 @@ const App: React.FC = () => {
   const filteredMenu = menuItems.filter((item) => item.id.startsWith(activeCategory));
 
   return (
-    <div className="relative flex min-h-[100dvh] w-full justify-center overflow-hidden bg-neutral-50">
-      {/* Soft vignette background (lighter, less noise) */}
+    <div
+      className="relative flex min-h-[100dvh] w-full justify-center overflow-hidden bg-white"
+      style={{
+        // 라이트 배경: 살짝 쿨한 화이트 그라데이션 + 매우 옅은 스카이 글로우
+        backgroundImage: `
+          radial-gradient(60% 40% at 50% 0%, rgba(56,189,248,0.08) 0%, rgba(0,0,0,0) 70%),
+          linear-gradient(180deg, #ffffff 0%, #fbfbfc 40%, #f7f8fa 100%)
+        `
+      }}
+    >
+      {/* 미세 비네트 (웜 뉴트럴) */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-35"
+        className="pointer-events-none absolute inset-0 opacity-12"
         style={{
           backgroundImage:
-            'radial-gradient(60% 40% at 50% 0%, rgba(180, 83, 9, 0.10) 0%, rgba(0,0,0,0) 70%), radial-gradient(40% 30% at 0% 100%, rgba(146, 64, 14, 0.10) 0%, rgba(0,0,0,0) 70%), radial-gradient(40% 30% at 100% 100%, rgba(146, 64, 14, 0.08) 0%, rgba(0,0,0,0) 70%)',
+            'radial-gradient(40% 30% at 0% 100%, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0) 70%), radial-gradient(40% 30% at 100% 100%, rgba(0,0,0,0.035) 0%, rgba(0,0,0,0) 70%)',
         }}
       />
 
-      {/* Phone frame */}
+      {/* Phone frame: 아주 밝은 카드 프레임(쿨 그레이) */}
       <div
-        className="relative z-10 min-h-[100dvh] w-full max-w-md border-8 border-amber-900/90 bg-amber-50/95 backdrop-blur-sm shadow-[0_25px_80px_-20px_rgba(0,0,0,0.45)]"
+        className="relative z-10 min-h-[100dvh] w-full max-w-md border-8 border-neutral-200 bg-white/95 backdrop-blur-[2px] shadow-[0_25px_80px_-20px_rgba(0,0,0,0.18)]"
         style={{
-          backgroundImage:
-            'linear-gradient(180deg, rgba(250, 240, 203, 0.55) 0%, rgba(250, 240, 203, 0.25) 100%), repeating-linear-gradient(45deg, rgba(120, 53, 15, 0.035) 0 12px, transparent 12px 24px)',
+          backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.96) 100%)'
         }}
       >
-        {/* Top trim */}
-        <div className="absolute left-0 right-0 top-0 z-20 h-2 bg-gradient-to-r from-amber-900 via-yellow-600 to-amber-900">
-          <div className="absolute inset-0 opacity-60 bg-gradient-to-r from-transparent via-yellow-300 to-transparent" />
+        {/* 상단 라인: 스카이→엠버 미묘한 포인트 (헤더/오더바와 조화) */}
+        <div className="absolute left-0 right-0 top-0 z-20 h-2 bg-gradient-to-r from-sky-200 via-amber-200 to-sky-200">
+          <div className="absolute inset-0 opacity-50 bg-gradient-to-r from-transparent via-white to-transparent" />
         </div>
 
-        {/* Nail accents */}
-        <div className="absolute left-4 top-4 z-20 h-3 w-3 rounded-full border-2 border-amber-950 bg-amber-900 shadow-inner" />
-        <div className="absolute right-4 top-4 z-20 h-3 w-3 rounded-full border-2 border-amber-950 bg-amber-900 shadow-inner" />
+        {/* 라이트 리벳 */}
+        <div className="absolute left-4 top-4 z-20 h-3 w-3 rounded-full border-2 border-neutral-300 bg-neutral-200 shadow-inner" />
+        <div className="absolute right-4 top-4 z-20 h-3 w-3 rounded-full border-2 border-neutral-300 bg-neutral-200 shadow-inner" />
 
         <Header cartCount={cartCount} cartTotal={cartTotal} toggleOrder={toggleOrder} />
 
         <main className="relative z-10 px-5 pt-4 pb-[6.5rem] sm:px-6">
-          <MenuTab activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
+          {/* 스크림 패널: 라이트 스카이 틴트(아주 옅음)로 주변과 톤 매칭 */}
+          <div className="rounded-2xl border border-neutral-200 bg-white/90 p-3 backdrop-blur">
+            <MenuTab activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
 
-          <div className="space-y-5">
-            {filteredMenu.length === 0 && (
-              <div className="rounded-lg border border-amber-200 bg-white/70 p-6 text-center text-amber-800 shadow-sm">
-                <p className="font-semibold">현재 선택된 카테고리에 현상범이 없습니다.</p>
-                <p className="mt-2 text-xs opacity-70">전체 메뉴: {menuItems.length} • 필터된 메뉴: {filteredMenu.length}</p>
-                <p className="text-xs opacity-70">활성 카테고리: {activeCategory}</p>
-              </div>
-            )}
+            <div className="mt-3 space-y-5">
+              {filteredMenu.length === 0 && (
+                <div className="rounded-lg border border-neutral-200 bg-white p-6 text-center text-neutral-700 shadow-sm">
+                  <p className="font-semibold">선택된 카테고리에 노선이 없습니다.</p>
+                  <p className="mt-2 text-xs text-neutral-500">
+                    전체 노선: {menuItems.length} • 현재 노선: {filteredMenu.length}
+                  </p>
+                  <p className="text-xs text-neutral-500">활성 카테고리: {activeCategory}</p>
+                </div>
+              )}
 
-            {filteredMenu.map((item) => (
-              <MenuItem key={item.id} item={item} addToCart={addToCart} />
-            ))}
+              {filteredMenu.map((item) => (
+                <MenuItem key={item.id} item={item} addToCart={addToCart} />
+              ))}
+            </div>
           </div>
         </main>
 
@@ -223,16 +236,16 @@ const App: React.FC = () => {
           updateCartItem={updateCartQuantity}
         />
 
-        {/* NOTE: 하단 요약 바는 포털로 body에 붙음 */}
+        {/* 하단 요약 바는 포털로 body에 붙음 */}
         <OrderBar cartCount={cartCount} cartTotal={cartTotal} onOpen={toggleOrder} />
 
-        {/* Bottom nail accents */}
-        <div className="absolute bottom-4 left-4 z-20 h-3 w-3 rounded-full border-2 border-amber-950 bg-amber-900 shadow-inner" />
-        <div className="absolute bottom-4 right-4 z-20 h-3 w-3 rounded-full border-2 border-amber-950 bg-amber-900 shadow-inner" />
+        {/* 하단 리벳 */}
+        <div className="absolute bottom-4 left-4 z-20 h-3 w-3 rounded-full border-2 border-neutral-300 bg-neutral-200 shadow-inner" />
+        <div className="absolute bottom-4 right-4 z-20 h-3 w-3 rounded-full border-2 border-neutral-300 bg-neutral-200 shadow-inner" />
       </div>
 
-      {/* Soft floor shadow */}
-      <div className="pointer-events-none fixed bottom-0 left-1/2 h-8 w-1/2 -translate-x-1/2 bg-black/30 blur-xl" />
+      {/* 바닥 그림자(라이트) */}
+      <div className="pointer-events-none fixed bottom-0 left-1/2 h-8 w-1/2 -translate-x-1/2 bg-black/5 blur-xl" />
     </div>
   );
 };

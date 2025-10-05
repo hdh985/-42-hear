@@ -10,7 +10,20 @@ interface OrderBarProps {
 const OrderBar: React.FC<OrderBarProps> = ({ cartCount, cartTotal, onOpen }) => {
   if (cartCount <= 0) return null;
 
-  // 포털로 body에 붙여 상위 레이아웃/transform 영향 제거
+  const css = `
+    @keyframes runway {
+      0% { background-position: 0 0, 0 0; }
+      100% { background-position: 56px 0, -56px 0; }
+    }
+    @keyframes shine {
+      from { transform: translateX(-120%); }
+      to   { transform: translateX(160%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .animate-runway, .animate-shine { animation: none !important; transform: none !important; }
+    }
+  `;
+
   return createPortal(
     <div
       className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md"
@@ -18,52 +31,82 @@ const OrderBar: React.FC<OrderBarProps> = ({ cartCount, cartTotal, onOpen }) => 
       role="region"
       aria-label="주문 요약과 주문 버튼"
     >
+      <style dangerouslySetInnerHTML={{ __html: css }} />
+
       <div
-        className="relative overflow-hidden border-x-4 border-t-4 border-amber-950 bg-gradient-to-r from-amber-900 via-amber-800 to-amber-900 shadow-2xl"
-        style={{ clipPath: 'polygon(18px 0, calc(100% - 18px) 0, 100% 100%, 0 100%)' }}
+        className="relative overflow-hidden rounded-t-2xl border-x-4 border-t-4 border-sky-900 shadow-2xl"
+        style={{
+          backgroundImage:
+            'linear-gradient(180deg, rgba(10,26,58,0.96) 0%, rgba(9,22,48,0.96) 100%), radial-gradient(1200px 400px at 50% -200px, rgba(44,127,255,0.18) 0%, rgba(0,0,0,0) 70%)'
+        }}
       >
+        {/* 상단 얇은 라인 */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-900 via-sky-400 to-sky-900">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-sky-200 to-transparent opacity-60" />
+        </div>
+
+        {/* 바탕 패턴(전광판 느낌) */}
         <div
           aria-hidden
-          className="absolute inset-0 opacity-20"
-          style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent 0 6px, rgba(255,255,255,0.09) 6px 12px)' }}
+          className="absolute inset-0 opacity-15"
+          style={{
+            backgroundImage:
+              'linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
+            backgroundSize: '40px 40px, 40px 40px'
+          }}
         />
 
-        <div className="relative z-10 flex items-center justify-between p-4">
-          <div className="flex flex-col">
+        <div className="relative z-10 flex items-center justify-between p-4 text-sky-50">
+          {/* 좌측: 라우트/수량/금액 */}
+          <div className="flex flex-col min-w-0">
             <div className="mb-0.5 flex items-center gap-2">
-              <span className="text-lg text-yellow-300" aria-hidden>
-                🛒
+              <span className="text-lg" aria-hidden>✈️</span>
+              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-sky-800/70 border border-sky-600/50">
+                ICN → ORDERS
               </span>
-              <span className="text-sm font-medium text-amber-200" aria-live="polite">
-                총 {cartCount}개 담음
+              <span className="text-sm font-medium text-sky-200" aria-live="polite">
+                총 {cartCount}개
               </span>
             </div>
-            <div className="flex items-center gap-1">
-              <span className="text-sm text-green-300" aria-hidden>
-                
-              </span>
-              <span className="tabular-nums text-xl font-extrabold tracking-wide text-green-200 drop-shadow">
+
+            <div className="flex items-baseline gap-2">
+              <span className="text-[11px] text-sky-300/90">Fare</span>
+              <span className="tabular-nums text-xl font-extrabold tracking-wide text-amber-300 drop-shadow">
                 ₩{cartTotal.toLocaleString()}
               </span>
             </div>
           </div>
 
+          {/* 우측: ‘Boarding’ 스타일 CTA */}
           <button
             onClick={onOpen}
-            className="group relative inline-flex items-center justify-center border-4 border-amber-900 bg-gradient-to-r from-amber-600 to-amber-500 px-6 py-3 font-bold uppercase tracking-wide text-amber-50 transition-transform hover:from-amber-500 hover:to-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 active:translate-y-[1px]"
-            style={{ clipPath: 'polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%)' }}
+            className="group relative inline-flex items-center justify-center rounded-xl border-2 border-amber-300 bg-gradient-to-r from-amber-300 to-amber-200 px-5 py-3 font-extrabold tracking-wide text-[#0a1220] transition-transform hover:from-amber-200 hover:to-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 active:translate-y-[1px]"
             aria-label="주문하기"
           >
-            <span className="drop-shadow">주문하기</span>
-            <span className="ml-2 rounded-sm border border-amber-900/40 bg-amber-900/30 px-2 py-0.5 text-xs text-amber-100/90">
+            <span className="drop-shadow">Boarding • 주문하기</span>
+            <span className="ml-2 rounded-sm border border-amber-400/60 bg-amber-300/60 px-2 py-0.5 text-xs">
               {cartCount}
             </span>
+            {/* Shine */}
+            <span
+              aria-hidden
+              className="animate-shine pointer-events-none absolute inset-y-0 left-0 w-1/3 -skew-x-12 bg-gradient-to-r from-white/0 via-white/35 to-white/0"
+              style={{ animation: 'shine 1.4s ease-in-out infinite' }}
+            />
           </button>
         </div>
 
-        <div className="absolute left-0 right-0 bottom-0 h-1 bg-gradient-to-r from-amber-950 via-yellow-600 to-amber-950">
-          <div className="absolute inset-0 opacity-60 bg-gradient-to-r from-transparent via-yellow-300 to-transparent" />
-        </div>
+        {/* 하단 활주로 러닝 라이트 */}
+        <div
+          aria-hidden
+          className="animate-runway absolute left-0 right-0 bottom-0 h-1"
+          style={{
+            backgroundImage:
+              'linear-gradient(90deg, rgba(255,255,255,0.28) 25%, transparent 25% 50%, rgba(255,255,255,0.28) 50% 75%, transparent 75%), linear-gradient(90deg, rgba(255,255,255,0.14) 25%, transparent 25% 50%, rgba(255,255,255,0.14) 50% 75%, transparent 75%)',
+            backgroundSize: '56px 2px, 56px 2px',
+            animation: 'runway 4s linear infinite'
+          }}
+        />
       </div>
     </div>,
     document.body
