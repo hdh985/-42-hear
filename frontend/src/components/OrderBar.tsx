@@ -83,7 +83,7 @@ const OrderBar: React.FC<OrderBarProps> = ({ cartCount, cartTotal, onOpen }) => 
             className="group relative inline-flex items-center justify-center rounded-xl border-2 border-amber-300 bg-gradient-to-r from-amber-300 to-amber-200 px-5 py-3 font-extrabold tracking-wide text-[#0a1220] transition-transform hover:from-amber-200 hover:to-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 active:translate-y-[1px]"
             aria-label="주문하기"
           >
-            <span className="drop-shadow">•주문하기</span>
+            <span className="drop-shadow">• 주문하기</span>
             <span className="ml-2 rounded-sm border border-amber-400/60 bg-amber-300/60 px-2 py-0.5 text-xs">
               {cartCount}
             </span>
