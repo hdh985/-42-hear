@@ -100,7 +100,7 @@ const Footer: React.FC = () => {
               aria-haspopup="dialog"
               className="border-b border-amber-300 transition-colors duration-200 hover:text-amber-200 hover:border-amber-200"
             >
-              🔒 개인정보 보호
+              🔒 개인정보보호
             </button>
           </div>
 
