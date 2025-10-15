@@ -142,10 +142,10 @@ const Header: React.FC<Props> = ({ cartCount, cartTotal, toggleOrder }) => {
               </div>
               <div className="truncate">
                 <h2 className="text-lg font-extrabold tracking-widest drop-shadow text-sky-200">
-                  부스이름 
+                  외대제
                 </h2>
                 <p className="text-[11px] text-sky-200/80 font-semibold truncate">
-                  제42대 외국어대학 학생회 hear — Night Booth
+                  제42대 외국어대학 학생회 hear
                 </p>
               </div>
             </div>
