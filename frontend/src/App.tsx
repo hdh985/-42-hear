@@ -43,7 +43,7 @@ const App: React.FC = () => {
       {
         id: 'snack-001',
         category: 'snack',
-        title: "밤이 되었습니'닭강정'",
+        title: "두부김치",
         description: '보안관도 밤에 벌떡 일어나 먹을 맛',
         price: 20000,
         change: '+15.2%',
@@ -57,7 +57,7 @@ const App: React.FC = () => {
       {
         id: 'snack-002',
         category: 'snack',
-        title: "대포'알밥주먹밥'소리에 눈이 먼'떡갈비'",
+        title: "마라탕",
         description: '대포소리만큼 맛있는 떡갈비',
         price: 11000,
         change: '+12.8%',
@@ -71,7 +71,7 @@ const App: React.FC = () => {
       {
         id: 'snack-003',
         category: 'snack',
-        title: "두두두두 ‘두부김치’",
+        title: "",
         description: '이것은 입에서 나는 소리가 아니여 두부 김치',
         price: 10000,
         change: '-3.5%',
