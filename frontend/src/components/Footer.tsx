@@ -60,7 +60,7 @@ const Footer: React.FC = () => {
                 <h3 className="text-lg font-extrabold tracking-wider text-amber-300 drop-shadow">
                   제42대 외국어대학 학생회 hear
                 </h3>
-                <p className="text-[10px] text-sky-200/90">2025 외국어대학 외대제 • 부제 정해줘</p>
+                <p className="text-[10px] text-sky-200/90">2025 외국어대학 외대제: New-Path-Tival</p>
               </div>
             </div>
           </div>
