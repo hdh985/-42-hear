@@ -71,7 +71,7 @@ const App: React.FC = () => {
       {
         id: 'snack-003',
         category: 'snack',
-        title: "",
+        title: "가라아게 + 양배추 샐러드",
         description: '이것은 입에서 나는 소리가 아니여 두부 김치',
         price: 10000,
         change: '-3.5%',
@@ -82,26 +82,13 @@ const App: React.FC = () => {
         investment: '감시 중',
         isSoldOut: false,
       },
-      {
-        id: 'snack-004',
-        category: 'snack',
-        title: "웰컴 투 '에그인헬'",
-        description: '지옥에서도 잘 팔릴 카우보이 픽',
-        price: 20000,
-        change: '+8.7%',
-        trend: 'up',
-        marketCap: '$40M',
-        volume: '중간',
-        volatility: '중간',
-        investment: '체포 권장',
-        isSoldOut: false,
-      },
+    
 
       // beverage
       {
         id: 'beverage-001',
         category: 'beverage',
-        title: '’계란 탕‘탕탕(판매종료)',
+        title: '맥엔치즈 + 과장/뺑',
         description: '계란 탕후루 룩',
         price: 10000,
         change: '+5.2%',
@@ -115,7 +102,7 @@ const App: React.FC = () => {
       {
         id: 'beverage-002',
         category: 'beverage',
-        title: "강도가 훔쳐간 ‘황도’",
+        title: "츄러스",
         description: '눈물도 훔치며 먹을 맛',
         price: 5000,
         change: '+7.1%',
@@ -129,7 +116,7 @@ const App: React.FC = () => {
       {
         id: 'beverage-003',
         category: 'beverage',
-        title: '’묵사발‘을 내주겠어.',
+        title: '연어 볼리니',
         description: '완전한 묵사발',
         price: 10000,
         change: '+3.8%',
@@ -143,7 +130,7 @@ const App: React.FC = () => {
       {
         id: 'beverage-004',
         category: 'beverage',
-        title: "[속보] ’설탕‘ 공장에서 ’토메이토‘ 발생",
+        title: "카프레제",
         description: '토마토에 설탕 추가',
         price: 5000,
         change: '-1.2%',

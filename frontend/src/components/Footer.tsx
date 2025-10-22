@@ -54,7 +54,7 @@ const Footer: React.FC = () => {
             {/* 로고/타이틀 (보딩패스 카드) */}
             <div className="flex items-center justify-center rounded-xl border border-sky-700 bg-sky-900/40 p-2">
               <div className="mr-2 rounded-lg border border-sky-600 bg-sky-800/60 p-1 shadow-inner">
-                <img src="/hear.jpg" alt="히어컴퍼니 로고" className="h-12 w-12 rounded-md object-cover" />
+                <img src="/hear.png" alt="히어컴퍼니 로고" className="h-12 w-12 rounded-md object-cover" />
               </div>
               <div className="text-center leading-tight">
                 <h3 className="text-lg font-extrabold tracking-wider text-amber-300 drop-shadow">
