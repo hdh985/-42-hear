@@ -62,6 +62,9 @@ const OrderForm: React.FC<OrderFormProps> = ({
   const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
 
+  // ✈️ 주문 성공 시 표시할 비행기 오버레이 상태
+  const [showPlane, setShowPlane] = useState(false);
+
   const seatFeeTotal = tableSize * SEAT_FEE_PER_PERSON;
   const finalTotal = cartTotal + seatFeeTotal;
 
@@ -170,12 +173,38 @@ const OrderForm: React.FC<OrderFormProps> = ({
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/orders`, formData);
       setOrderNumber(`BOARDING-${response.data.order_id}`);
-      setOrderComplete(true);
+
+      // ✈️ 1) 비행기 애니메이션 시작
+      setShowPlane(true);
+
+      // ⏱️ 2) 애니메이션 후 완료 화면 전환
+      const DURATION = 1200; // 1.2s
+      setTimeout(() => {
+        setShowPlane(false);
+        setOrderComplete(true);
+      }, DURATION);
     } catch (error) {
       alert('메뉴 신청 실패');
       console.error(error);
     }
   };
+
+  // ✈️ 비행기/트레일 CSS (prefers-reduced-motion 대응)
+  const planeCss = `
+@keyframes plane-fly-in {
+  0%   { transform: translateX(-60vw) translateY(0) scale(.9); opacity: 0; }
+  60%  { opacity: 1; }
+  100% { transform: translateX(0) translateY(0) scale(1); opacity: 1; }
+}
+@keyframes trail-dots {
+  0% { stroke-dashoffset: 80; opacity: .0; }
+  20% { opacity: .35; }
+  100% { stroke-dashoffset: 0; opacity: .35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plane-anim, .trail-anim { animation: none !important; }
+}
+`;
 
   if (orderComplete) {
     return (
@@ -234,6 +263,9 @@ const OrderForm: React.FC<OrderFormProps> = ({
           'linear-gradient(180deg, rgba(10,26,58,0.96) 0%, rgba(9,22,48,0.96) 100%), radial-gradient(1200px 400px at 50% -200px, rgba(44,127,255,0.18) 0%, rgba(0,0,0,0) 70%)'
       }}
     >
+      {/* ✈️ plane CSS */}
+      <style dangerouslySetInnerHTML={{ __html: planeCss }} />
+
       {/* 헤더(보딩패스 상단 바) */}
       <div className="flex items-center justify-between border-b border-sky-800 pb-2">
         <div className="flex items-center gap-2">
@@ -478,6 +510,44 @@ const OrderForm: React.FC<OrderFormProps> = ({
           Boarding • 주문하기
         </button>
       </div>
+
+      {/* ===== Plane overlay (투명 배경) ===== */}
+      {showPlane && (
+        <div
+          className="fixed inset-0 z-[999] grid place-items-center pointer-events-none"
+          style={{ background: 'transparent' }}
+          aria-hidden="true"
+        >
+          <svg
+            className="plane-anim"
+            width="220"
+            height="120"
+            viewBox="0 0 220 120"
+            style={{ animation: 'plane-fly-in 1.2s ease-out forwards' }}
+          >
+            {/* 점선 항로 (뒤에서 앞으로 그려짐) */}
+            <path
+              className="trail-anim"
+              d="M10,90 C80,70 140,70 210,60"
+              fill="none"
+              stroke="rgba(180,220,255,.5)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray="6 10"
+              style={{ animation: 'trail-dots 1.2s ease-out forwards' }}
+            />
+            {/* 비행기 실루엣 */}
+            <g transform="translate(150,50)">
+              <path
+                d="M-40,8 L-5,0 L-40,-8 L-32,-2 L-70,-12 L-72,-8 L-40,-2 L-40,2 L-72,8 L-70,12 L-32,2 Z"
+                fill="white"
+                opacity="0.95"
+                filter="drop-shadow(0 2px 6px rgba(0,0,0,.35))"
+              />
+            </g>
+          </svg>
+        </div>
+      )}
 
       {/* Modals */}
       <PolicyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} type="privacy" />
