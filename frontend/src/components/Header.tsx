@@ -142,10 +142,10 @@ const Header: React.FC<Props> = ({ cartCount, cartTotal, toggleOrder }) => {
               </div>
               <div className="truncate">
                 <h2 className="text-lg font-extrabold tracking-widest drop-shadow text-sky-200">
-                  New-Path-tival : 여기 세계의 소리를 듣다
+                  New-Path-Tival : 세계를 잇다
                 </h2>
                 <p className="text-[11px] text-sky-200/80 font-semibold truncate">
-                  제42대 외국어대학 학생회 hear
+                  제42대 외국어대학 학생회 hear • 2025 외국어대학 외대제
                 </p>
               </div>
             </div>
