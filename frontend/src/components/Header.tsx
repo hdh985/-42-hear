@@ -129,26 +129,35 @@ const Header: React.FC<Props> = ({ cartCount, cartTotal, toggleOrder }) => {
         <div className="px-5 py-4 space-y-4 relative">
           <div className="flex items-center justify-between">
             {/* Passport stamp badge */}
-            <div className="flex items-center min-w-0">
-              <div className="relative mr-3 grid place-items-center w-14 h-14 rounded-full bg-gradient-to-b from-sky-700 to-sky-900 border-2 border-sky-300/60 shadow-inner">
-                {/* 외곽 도트 링 */}
-                <div className="absolute inset-[-4px] rounded-full border-2 border-dashed border-sky-300/50 rotate-[-6deg]" />
-                {/* 중앙 마크(지구본 이모지 대체 가능) */}
-                <div className="text-sky-100 text-xl select-none" aria-hidden>🌍</div>
-                {/* 비행기 아이콘 궤적 */}
-                <div className="plane absolute -top-1 -right-1 text-sm rotate-[-6deg]" style={{ animation: 'plane-bob 2.6s ease-in-out infinite' }}>
-                  ✈️
-                </div>
-              </div>
-              <div className="truncate">
-                <h2 className="text-lg font-extrabold tracking-widest drop-shadow text-sky-200">
-                  New-Path-Tival
-                </h2>
-                <p className="text-[11px] text-sky-200/80 font-semibold truncate">
-                  제42대 외국어대학 학생회 hear
-                </p>
-              </div>
-            </div>
+                  {/* Passport stamp badge */}
+        <div className="flex items-center min-w-0">
+          <div
+            className="mr-3 shrink-0 relative grid place-items-center w-14 h-14 rounded-full
+                      border-2 border-sky-300/70 bg-sky-800/60 ring-1 ring-sky-900/30
+                      shadow-inner overflow-hidden"
+            aria-hidden="true"
+          >
+            {/* 로고: 정확 중앙 정렬 + 비율 유지 */}
+            <img
+              src="/hear.png"
+              alt="히어컴퍼니 로고"
+              className="pointer-events-none w-12 h-12 object-contain [transform:translateY(1px)]"
+              draggable={false}
+            />
+            {/* 아주 약한 하이라이트 링 */}
+            <span className="absolute inset-0 rounded-full" style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.06)' }} />
+          </div>
+
+          <div className="truncate">
+            <h2 className="text-lg font-extrabold tracking-widest drop-shadow text-sky-200">
+              New-Path-Tival
+            </h2>
+            <p className="text-[11px] text-sky-200/80 font-semibold truncate">
+              제42대 외국어대학 학생회 hear
+            </p>
+          </div>
+        </div>
+
 
             {/* Cart (Boarding 버튼 스타일) */}
             <button

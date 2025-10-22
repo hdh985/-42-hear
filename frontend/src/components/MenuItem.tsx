@@ -86,7 +86,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, addToCart }) => {
   };
 
   // 카테고리 → 가상의 IATA 라우트 표기 (스낵: ICN→SNK / 음료: ICN→BEV)
-  const routeCode = item.category === 'snack' ? 'ICN → SNK' : 'ICN → BEV';
+  const routeCode = item.category === 'snack' ? 'ICN → MAIN' : 'ICN → SIDE';
 
   return (
     <div
@@ -130,12 +130,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, addToCart }) => {
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-800/80 border border-sky-500/40 text-sky-100 text-[11px] font-semibold">
                 ✈️ {routeCode}
               </span>
-              <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md ${trendBg} ${trendColor} text-[11px] font-bold border`}
-              >
-                <TrendIcon size={14} />
-                {item.change}
-              </span>
+              
             </div>
             <h3 className="mt-1 font-extrabold text-sky-100 text-[17px] tracking-wide drop-shadow-sm truncate">
               {item.title}

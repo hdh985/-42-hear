@@ -42,7 +42,7 @@ const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) 
   `;
 
   // IATA 라우트 라벨 (카테고리별)
-  const routeCode = (id: CategoryId) => (id === 'snack' ? 'ICN → SNK' : 'ICN → BEV');
+  const routeCode = (id: CategoryId) => (id === 'snack' ? 'ICN → MAIN' : 'ICN → SIDE');
 
   return (
     <div className="mb-6">

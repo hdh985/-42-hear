@@ -43,7 +43,7 @@ const App: React.FC = () => {
       {
         id: 'snack-001',
         category: 'snack',
-        title: "'두부김치'의 유혹",
+        title: "🇰🇷 '두부김치'의 유혹",
         description: '빠져나올 수 없는 두부김치의 유혹',
         price: 20000,
         change: '+15.2%',
@@ -57,7 +57,7 @@ const App: React.FC = () => {
       {
         id: 'snack-002',
         category: 'snack',
-        title: "火려한 불맛 '고추잡채'",
+        title: "🇨🇳 火려한 불맛 '고추잡채'",
         description: '매콤한 불맛 고추잡채',
         price: 11000,
         change: '+12.8%',
@@ -71,7 +71,7 @@ const App: React.FC = () => {
       {
         id: 'snack-003',
         category: 'snack',
-        title: "일본으로 '가라아게'",
+        title: "🇯🇵 일본으로 '가라아게'",
         description: '바삭바삭 일본식 가라아게',
         price: 10000,
         change: '-3.5%',
@@ -88,7 +88,7 @@ const App: React.FC = () => {
       {
         id: 'beverage-001',
         category: 'beverage',
-        title: "'맥엔치즈' 플리즈",
+        title: "🇺🇸 '맥엔치즈' 플리즈",
         description: '맥엔치즈 주세요',
         price: 10000,
         change: '+5.2%',
@@ -102,7 +102,7 @@ const App: React.FC = () => {
       {
         id: 'beverage-002',
         category: 'beverage',
-        title: "마드리드 'KHU러스'",
+        title: "🇪🇸 마드리드 'KHU러스'",
         description: '스페인 본토의 맛 츄러스',
         price: 5000,
         change: '+7.1%',
@@ -116,7 +116,7 @@ const App: React.FC = () => {
       {
         id: 'beverage-003',
         category: 'beverage',
-        title: "외대의 소리.. 들리니? '연어 볼리니'",
+        title: "🇷🇺 외대의 소리.. 들리니? '연어 볼리니'",
         description: '그대 살아 숨쉬는 한 연어 볼리니',
         price: 10000,
         change: '+3.8%',
@@ -130,7 +130,7 @@ const App: React.FC = () => {
       {
         id: 'beverage-004',
         category: 'beverage',
-        title: "'에스까르고 바게트'(feat.골뱅이)",
+        title: "🇫🇷 '에스까르고 바게트'(feat.골뱅이)",
         description: '토마토에 설탕 추가',
         price: 5000,
         change: '-1.2%',
