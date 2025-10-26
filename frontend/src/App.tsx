@@ -52,7 +52,7 @@ const App: React.FC = () => {
         volume: '높음',
         volatility: '높음',
         investment: '즉시 체포',
-        isSoldOut: true,
+        isSoldOut: false,
       },
       {
         id: 'snack-002',
@@ -97,7 +97,7 @@ const App: React.FC = () => {
         volume: '중간',
         volatility: '낮음',
         investment: '체포 권장',
-        isSoldOut: true,
+        isSoldOut: false,
       },
       {
         id: 'beverage-002',
