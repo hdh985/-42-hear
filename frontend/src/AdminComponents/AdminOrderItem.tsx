@@ -1,6 +1,16 @@
+// AdminOrderItem.tsx
 import React, { useMemo, useState } from 'react';
 import axios from 'axios';
-import { Timer, CheckCircle2, Undo2, Users, Music, Receipt, UserCheck, Image as ImageIcon } from 'lucide-react';
+import {
+  Timer,
+  CheckCircle2,
+  Undo2,
+  Users,
+  Music,
+  Receipt,
+  UserCheck,
+  Image as ImageIcon,
+} from 'lucide-react';
 
 interface OrderItem {
   name: string;
@@ -11,7 +21,7 @@ interface Order {
   id: number;
   table: string;
   name: string;
-  items: OrderItem[] | string; // 문자열일 수도 있음
+  items: OrderItem[] | string;
   total: number;
   song: string;
   image_path: string;
@@ -22,35 +32,56 @@ interface Order {
 
 interface Props {
   order: Order;
-  elapsed: number;
+  elapsed: number;        // 상위에서 계산해 내려줌
   adminName: string;
-  onRefresh: () => void;
+  onRefresh: () => void;  // 호출 후 목록 갱신
 }
 
-export default function AdminOrderItem({ order, elapsed, adminName, onRefresh }: Props) {
-  // ========= Helpers =========
-  const getZone = (table: number) => {
-    if (table >= 1 && table <= 50) return '돌다방';
-    if (table >= 51 && table <= 100) return '흡연부스';
-    return '기타';
-  };
+// 테이블 → 존
+const getZone = (table: number) => {
+  if (table >= 1 && table <= 50) return '돌다방' as const;
+  if (table >= 51 && table <= 100) return '흡연부스' as const;
+  return '기타' as const;
+};
 
+export default function AdminOrderItem({ order, elapsed, adminName, onRefresh }: Props) {
+  // 존 UI 메타
   const zoneMeta = useMemo(() => {
     const zone = getZone(Number(order.table));
-    const color = zone === '돌다방' ? 'blue' : zone === '흡연부스' ? 'amber' : 'slate';
-    const ring = color === 'blue' ? 'ring-blue-200' : color === 'amber' ? 'ring-amber-200' : 'ring-slate-200';
-    const pill = color === 'blue' ? 'bg-blue-100 text-blue-700' : color === 'amber' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-700';
-    const faint = color === 'blue' ? 'bg-blue-50' : color === 'amber' ? 'bg-amber-50' : 'bg-slate-50';
+    const color =
+      zone === '돌다방' ? 'blue' : zone === '흡연부스' ? 'amber' : 'slate';
+    const ring =
+      color === 'blue'
+        ? 'ring-blue-200'
+        : color === 'amber'
+        ? 'ring-amber-200'
+        : 'ring-slate-200';
+    const pill =
+      color === 'blue'
+        ? 'bg-blue-100 text-blue-700'
+        : color === 'amber'
+        ? 'bg-amber-100 text-amber-700'
+        : 'bg-slate-100 text-slate-700';
+    const faint =
+      color === 'blue'
+        ? 'bg-blue-50'
+        : color === 'amber'
+        ? 'bg-amber-50'
+        : 'bg-slate-50';
     return { zone, ring, pill, faint };
   }, [order.table]);
 
+  // 경과 타이머 뱃지
   const renderTimer = (elapsedSec: number) => {
     const minutes = Math.floor(elapsedSec / 60);
     const seconds = elapsedSec % 60;
-    const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds
+      .toString()
+      .padStart(2, '0')}`;
     let color = 'text-green-700 border-green-200';
     if (elapsedSec >= 900) color = 'text-red-700 border-red-200 font-bold';
-    else if (elapsedSec >= 600) color = 'text-amber-700 border-amber-200 font-semibold';
+    else if (elapsedSec >= 600)
+      color = 'text-amber-700 border-amber-200 font-semibold';
     return (
       <span
         className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border ${color} bg-white`}
@@ -61,16 +92,21 @@ export default function AdminOrderItem({ order, elapsed, adminName, onRefresh }:
     );
   };
 
-  // 문자열일 경우 JSON.parse() 처리 (내결함성 강화)
+  // items 문자열 방어적 파싱
   let parsedItems: OrderItem[] = [];
   try {
-    parsedItems = typeof order.items === 'string' ? JSON.parse(order.items || '[]') : order.items;
+    parsedItems =
+      typeof order.items === 'string'
+        ? JSON.parse(order.items || '[]')
+        : order.items;
     if (!Array.isArray(parsedItems)) parsedItems = [];
   } catch {
     parsedItems = [];
   }
 
-  const allItemsServed = parsedItems.length > 0 && parsedItems.every((item) => item.served_by);
+  const allItemsServed =
+    parsedItems.length > 0 &&
+    parsedItems.every((item) => Boolean(item.served_by));
 
   // ========= Local UI state =========
   const [loadingItemIndex, setLoadingItemIndex] = useState<number | null>(null);
@@ -100,7 +136,9 @@ export default function AdminOrderItem({ order, elapsed, adminName, onRefresh }:
   const handleComplete = async () => {
     try {
       setIsCompleting(true);
-      await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/complete`);
+      await axios.patch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/complete`
+      );
       onRefresh();
     } catch (e) {
       console.error('전체 처리 실패', e);
@@ -112,7 +150,9 @@ export default function AdminOrderItem({ order, elapsed, adminName, onRefresh }:
   const handleToggleStatus = async () => {
     try {
       setIsTogglingStatus(true);
-      await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/toggle`);
+      await axios.patch(
+        `${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/toggle`
+      );
       onRefresh();
     } catch (e) {
       console.error('상태 전환 실패', e);
@@ -132,7 +172,9 @@ export default function AdminOrderItem({ order, elapsed, adminName, onRefresh }:
       <div className="flex justify-between items-start gap-3 mb-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className={`px-2 py-0.5 text-[11px] rounded-full ${zoneMeta.pill}`}>{zoneMeta.zone}</span>
+            <span className={`px-2 py-0.5 text-[11px] rounded-full ${zoneMeta.pill}`}>
+              {zoneMeta.zone}
+            </span>
             <span className="text-[11px] text-gray-400">#{order.id}</span>
           </div>
           <h4 className="mt-1 text-base sm:text-lg font-semibold text-blue-700 flex items-center gap-2">
@@ -148,7 +190,9 @@ export default function AdminOrderItem({ order, elapsed, adminName, onRefresh }:
           {!order.processed && renderTimer(elapsed)}
           <span
             className={`px-2 py-1 rounded-full text-[11px] ${
-              order.processed ? 'bg-gray-200 text-gray-700' : 'bg-emerald-100 text-emerald-700'
+              order.processed
+                ? 'bg-gray-200 text-gray-700'
+                : 'bg-emerald-100 text-emerald-700'
             }`}
           >
             {order.processed ? '처리됨' : '대기'}
@@ -216,7 +260,12 @@ export default function AdminOrderItem({ order, elapsed, adminName, onRefresh }:
         </div>
         <div className="flex items-center gap-2 rounded-lg p-2 bg-gray-50">
           <Timer className="w-4 h-4" />
-          주문 시각: {new Date(order.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+          주문 시각:{' '}
+          {new Date(order.timestamp).toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })}
         </div>
       </div>
 
