@@ -33,8 +33,8 @@ const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
 
         {activeTab === 'terms' && (
           <div className="whitespace-pre-wrap leading-relaxed text-gray-800 text-xs">
-{`🎯 [HEART SHOT] 이용약관 (축제 부스 웹 주문 서비스)
-본 이용약관은 외국어대학 학생회(HEART SHOT) 부스(이하 '운영자')가 제공하는 주문/결제 서비스(이하 '서비스')의 이용조건 및 절차, 운영자와 이용자의 권리·의무·책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.
+{`🎯 [외대제 : New-Path-tival] 이용약관 (외대제 부스 웹 주문 서비스)
+본 이용약관은 외국어대학 학생회(New-Path-tival) 부스(이하 '운영자')가 제공하는 주문/결제 서비스(이하 '서비스')의 이용조건 및 절차, 운영자와 이용자의 권리·의무·책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.
 
 제1조 (목적)
 이 약관은 경희대학교 축제 부스 운영자인 [운영자]가 제공하는 온라인 주문 서비스의 이용조건 및 절차, 권리·의무 및 책임사항을 명확히 하여 원활한 거래를 도모함을 목적으로 합니다.
@@ -79,16 +79,16 @@ const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
 협의가 이루어지지 않을 경우, [운영자 소재지 관할 법원]을 제1심 전속 관할로 합니다.
 
 부칙
-본 약관은 2025년 09월 16일부터 시행됩니다.
+본 약관은 2025년 10월 28일부터 시행됩니다.
 본 약관에 명시되지 않은 사항은 관련 법령 및 상관례에 따릅니다.`}
           </div>
         )}
 
         {activeTab === 'privacy' && (
           <div className="whitespace-pre-wrap leading-relaxed text-gray-800 text-xs">
-{`🎯 [HEART SHOT] 개인정보처리방침 (축제 부스 웹 주문 서비스)
+{`🎯 [외대제 : New-Path-tival] 개인정보처리방침 (외대제 부스 웹 주문 서비스)
 
-HEART SHOT은 이용자의 개인정보를 매우 소중히 여기며, 관련 법령에 따라 다음과 같은 방침을 따릅니다.
+New-Path-tival은 이용자의 개인정보를 매우 소중히 여기며, 관련 법령에 따라 다음과 같은 방침을 따릅니다.
 
 1. 수집 항목
 - 필수 항목: 이름, 전화번호, 송금내역(이미지), 테이블 번호
@@ -113,11 +113,11 @@ HEART SHOT은 이용자의 개인정보를 매우 소중히 여기며, 관련 �
 - 문의: khuhear@gmail.com
 
 7. 문의처
--HEART SHOT 운영팀 (경희대학교 외국어대학 학생회)
+-New-Path-tival 운영팀 (경희대학교 외국어대학 학생회)
 - 이메일: khuhear@gmail.com / 전화: 010-6276-0281
 
 부칙
-본 방침은 2025년 9월 16일부터 시행됩니다.`}
+본 방침은 2025년 10월 28일부터 시행됩니다.`}
           </div>
         )}
       </div>
