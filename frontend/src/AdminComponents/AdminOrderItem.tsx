@@ -1,307 +1,243 @@
-// AdminOrderItem.tsx
-import React, { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import {
-  Timer,
-  CheckCircle2,
-  Undo2,
-  Users,
-  Music,
-  Receipt,
-  UserCheck,
-  Image as ImageIcon,
-} from 'lucide-react';
+import { Timer, CheckCircle2, Undo2, Users, Music, Receipt, UserCheck, Image as ImageIcon } from 'lucide-react';
 
-interface OrderItem {
-  name: string;
-  served_by?: string;
-}
-
+interface OrderItem { name: string; served_by?: string; }
 interface Order {
-  id: number;
-  table: string;
-  name: string;
-  items: OrderItem[] | string;
-  total: number;
-  song: string;
-  image_path: string;
-  timestamp: string;
-  processed: boolean;
-  table_size: number;
+  id: number; table: string; name: string;
+  items: OrderItem[] | string; total: number; song: string;
+  image_path: string; timestamp: string; processed: boolean; table_size: number;
 }
+// elapsed prop 제거 — 컴포넌트 내부에서 직접 계산
+interface Props { order: Order; adminName: string; onRefresh: () => void; }
 
-interface Props {
-  order: Order;
-  elapsed: number;        // 상위에서 계산해 내려줌
-  adminName: string;
-  onRefresh: () => void;  // 호출 후 목록 갱신
-}
-
-// 테이블 → 존
 const getZone = (table: number) => {
-  if (table >= 1 && table <= 50) return '돌다방' as const;
+  if (table >= 1  && table <= 50)  return '돌다방'  as const;
   if (table >= 51 && table <= 100) return '흡연부스' as const;
   return '기타' as const;
 };
 
-export default function AdminOrderItem({ order, elapsed, adminName, onRefresh }: Props) {
-  // 존 UI 메타
-  const zoneMeta = useMemo(() => {
-    const zone = getZone(Number(order.table));
-    const color =
-      zone === '돌다방' ? 'blue' : zone === '흡연부스' ? 'amber' : 'slate';
-    const ring =
-      color === 'blue'
-        ? 'ring-blue-200'
-        : color === 'amber'
-        ? 'ring-amber-200'
-        : 'ring-slate-200';
-    const pill =
-      color === 'blue'
-        ? 'bg-blue-100 text-blue-700'
-        : color === 'amber'
-        ? 'bg-amber-100 text-amber-700'
-        : 'bg-slate-100 text-slate-700';
-    const faint =
-      color === 'blue'
-        ? 'bg-blue-50'
-        : color === 'amber'
-        ? 'bg-amber-50'
-        : 'bg-slate-50';
-    return { zone, ring, pill, faint };
-  }, [order.table]);
+export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
+  const zone = useMemo(() => getZone(Number(order.table)), [order.table]);
+  const zoneBg    = zone === '돌다방' ? '#EBF3FE' : zone === '흡연부스' ? '#FFF8ED' : '#F2F4F6';
+  const zoneColor = zone === '돌다방' ? '#3182F6' : zone === '흡연부스' ? '#FF9500' : '#6B7684';
 
-  // 경과 타이머 뱃지
-  const renderTimer = (elapsedSec: number) => {
-    const minutes = Math.floor(elapsedSec / 60);
-    const seconds = elapsedSec % 60;
-    const timeStr = `${minutes.toString().padStart(2, '0')}:${seconds
-      .toString()
-      .padStart(2, '0')}`;
-    let color = 'text-green-700 border-green-200';
-    if (elapsedSec >= 900) color = 'text-red-700 border-red-200 font-bold';
-    else if (elapsedSec >= 600)
-      color = 'text-amber-700 border-amber-200 font-semibold';
+  // 각 카드가 독립적으로 타이머 관리 → OrderManager 전체 리렌더 없음
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    if (order.processed) { setSeconds(0); return; }
+    const iso = order.timestamp.endsWith('Z') ? order.timestamp : `${order.timestamp}Z`;
+    const start = new Date(iso).getTime();
+    const tick = () => setSeconds(Math.max(0, Math.floor((Date.now() - start) / 1000)));
+    tick();
+    const t = setInterval(tick, 1000);
+    return () => clearInterval(t);
+  }, [order.processed, order.timestamp]);
+
+  const renderTimer = (sec: number) => {
+    const m = Math.floor(sec / 60), s = sec % 60;
+    const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const color = sec >= 900 ? '#F04452' : sec >= 600 ? '#FF9500' : '#00C073';
     return (
-      <span
-        className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border ${color} bg-white`}
-        aria-label={`경과 시간 ${timeStr}`}
-      >
-        <Timer className="w-3.5 h-3.5" /> {timeStr}
+      <span style={{
+        display: 'inline-flex', alignItems: 'center', gap: '4px',
+        fontSize: '12px', fontWeight: 700, color,
+        background: `${color}14`,
+        borderRadius: '100px', padding: '4px 10px',
+        fontVariantNumeric: 'tabular-nums',
+      }}>
+        <Timer size={12} /> {str}
       </span>
     );
   };
 
-  // items 문자열 방어적 파싱
   let parsedItems: OrderItem[] = [];
   try {
-    parsedItems =
-      typeof order.items === 'string'
-        ? JSON.parse(order.items || '[]')
-        : order.items;
+    parsedItems = typeof order.items === 'string' ? JSON.parse(order.items || '[]') : order.items;
     if (!Array.isArray(parsedItems)) parsedItems = [];
-  } catch {
-    parsedItems = [];
-  }
+  } catch { parsedItems = []; }
 
-  const allItemsServed =
-    parsedItems.length > 0 &&
-    parsedItems.every((item) => Boolean(item.served_by));
+  const allServed = parsedItems.length > 0 && parsedItems.every(i => !!i.served_by);
 
-  // ========= Local UI state =========
-  const [loadingItemIndex, setLoadingItemIndex] = useState<number | null>(null);
+  const [loadingIdx, setLoadingIdx]     = useState<number | null>(null);
   const [isCompleting, setIsCompleting] = useState(false);
-  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
-  const [showProof, setShowProof] = useState(false);
+  const [isToggling, setIsToggling]     = useState(false);
+  const [showProof, setShowProof]       = useState(false);
 
-  // ========= Actions =========
-  const handleItemToggle = async (itemIndex: number, currentServedBy?: string) => {
+  const handleItemToggle = async (idx: number, currentServedBy?: string) => {
     try {
-      setLoadingItemIndex(itemIndex);
-      const formData = new FormData();
-      formData.append('item_index', String(itemIndex));
-      formData.append('admin', currentServedBy ? '' : adminName);
-      await axios.patch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/serve-item`,
-        formData
-      );
+      setLoadingIdx(idx);
+      const fd = new FormData();
+      fd.append('item_index', String(idx));
+      fd.append('admin', currentServedBy ? '' : adminName);
+      await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/serve-item`, fd);
       onRefresh();
-    } catch (e) {
-      console.error('항목 처리 실패', e);
-    } finally {
-      setLoadingItemIndex(null);
-    }
+    } catch (e) { console.error(e); } finally { setLoadingIdx(null); }
   };
 
   const handleComplete = async () => {
-    try {
-      setIsCompleting(true);
-      await axios.patch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/complete`
-      );
-      onRefresh();
-    } catch (e) {
-      console.error('전체 처리 실패', e);
-    } finally {
-      setIsCompleting(false);
-    }
+    try { setIsCompleting(true); await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/complete`); onRefresh(); }
+    catch (e) { console.error(e); } finally { setIsCompleting(false); }
   };
 
-  const handleToggleStatus = async () => {
-    try {
-      setIsTogglingStatus(true);
-      await axios.patch(
-        `${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/toggle`
-      );
-      onRefresh();
-    } catch (e) {
-      console.error('상태 전환 실패', e);
-    } finally {
-      setIsTogglingStatus(false);
-    }
+  const handleToggle = async () => {
+    try { setIsToggling(true); await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/toggle`); onRefresh(); }
+    catch (e) { console.error(e); } finally { setIsToggling(false); }
   };
 
-  // ========= Render =========
   return (
-    <div
-      className={`p-5 mb-6 border rounded-2xl shadow-sm ring-1 ${zoneMeta.ring} ${
-        order.processed ? 'bg-gray-50 opacity-90' : 'bg-white hover:shadow-md'
-      } transition-shadow`}
-    >
-      {/* Header */}
-      <div className="flex justify-between items-start gap-3 mb-3">
+    <div style={{
+      background: '#fff',
+      borderRadius: '16px',
+      marginBottom: '12px',
+      boxShadow: order.processed ? '0 1px 4px rgba(0,0,0,0.05)' : '0 2px 12px rgba(0,0,0,0.08)',
+      opacity: order.processed ? 0.75 : 1,
+      overflow: 'hidden',
+      transition: 'box-shadow 0.15s ease',
+      border: '1px solid var(--border, #E5E8EB)',
+    }}>
+      {/* Card header */}
+      <div style={{
+        display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start',
+        gap: '10px', padding: '14px 16px 12px',
+        borderBottom: '1px solid var(--border, #E5E8EB)',
+      }}>
         <div>
-          <div className="flex items-center gap-2">
-            <span className={`px-2 py-0.5 text-[11px] rounded-full ${zoneMeta.pill}`}>
-              {zoneMeta.zone}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: zoneColor, background: zoneBg, borderRadius: '100px', padding: '3px 10px' }}>
+              {zone}
             </span>
-            <span className="text-[11px] text-gray-400">#{order.id}</span>
+            <span style={{ fontSize: '11px', color: '#B0B8C1' }}>#{order.id}</span>
           </div>
-          <h4 className="mt-1 text-base sm:text-lg font-semibold text-blue-700 flex items-center gap-2">
-            테이블 {order.table}
-            <span className="text-gray-300">•</span>
-            {order.name}
-            <span className="ml-1 inline-flex items-center text-xs text-gray-500">
-              <Users className="w-3.5 h-3.5 mr-1" /> {order.table_size}명
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '18px', fontWeight: 900, color: '#191F28', letterSpacing: '-0.04em' }}>
+              테이블 {order.table}
             </span>
-          </h4>
+            <span style={{ color: '#E5E8EB' }}>·</span>
+            <span style={{ fontSize: '16px', fontWeight: 700, color: '#191F28', letterSpacing: '-0.02em' }}>{order.name}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '12px', color: '#6B7684' }}>
+              <Users size={12} /> {order.table_size}명
+            </span>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {!order.processed && renderTimer(elapsed)}
-          <span
-            className={`px-2 py-1 rounded-full text-[11px] ${
-              order.processed
-                ? 'bg-gray-200 text-gray-700'
-                : 'bg-emerald-100 text-emerald-700'
-            }`}
-          >
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' }}>
+          {!order.processed && renderTimer(seconds)}
+          <span style={{
+            fontSize: '12px', fontWeight: 700, borderRadius: '100px', padding: '4px 12px',
+            background: order.processed ? '#F2F4F6' : '#E8FBF3',
+            color: order.processed ? '#6B7684' : '#00C073',
+          }}>
             {order.processed ? '처리됨' : '대기'}
           </span>
           <button
-            onClick={handleToggleStatus}
-            disabled={isTogglingStatus}
-            className="text-xs px-2.5 py-1.5 rounded-md bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-60"
+            onClick={handleToggle}
+            disabled={isToggling}
+            style={{
+              fontSize: '12px', fontWeight: 700, padding: '7px 14px', borderRadius: '100px', border: 'none',
+              background: '#F2F4F6', color: '#6B7684', cursor: 'pointer',
+              opacity: isToggling ? 0.5 : 1, transition: 'all 0.15s ease',
+            }}
           >
-            {order.processed ? '↩ 처리 대기로' : '✅ 처리 완료로'}
+            {order.processed ? '↩ 대기로' : '✅ 완료 처리'}
           </button>
         </div>
       </div>
 
       {/* Items */}
-      <ul className="mb-4 border rounded-xl divide-y divide-gray-100">
+      <div style={{ padding: '8px 16px' }}>
         {parsedItems.length === 0 && (
-          <li className="p-3 text-sm text-gray-500">메뉴 항목이 없습니다.</li>
+          <p style={{ fontSize: '13px', color: '#B0B8C1', padding: '6px 0' }}>메뉴 항목이 없습니다.</p>
         )}
         {parsedItems.map((item, idx) => (
-          <li key={idx} className="flex justify-between items-center p-2.5">
-            <div className="min-w-0">
-              <span className="text-sm">• {item.name}</span>
+          <div key={idx} style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '9px 0',
+            borderBottom: idx < parsedItems.length - 1 ? '1px solid var(--border, #E5E8EB)' : 'none',
+          }}>
+            <div style={{ minWidth: 0 }}>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#191F28', letterSpacing: '-0.01em' }}>
+                {item.name}
+              </span>
               {item.served_by && (
-                <span className="ml-2 inline-flex items-center text-xs text-emerald-700">
-                  <UserCheck className="w-3.5 h-3.5 mr-1" /> {item.served_by} 처리
+                <span style={{ marginLeft: '8px', display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '12px', color: '#00C073', fontWeight: 600 }}>
+                  <UserCheck size={11} /> {item.served_by}
                 </span>
               )}
             </div>
             {!order.processed && (
               <button
                 onClick={() => handleItemToggle(idx, item.served_by)}
-                disabled={loadingItemIndex === idx}
-                className={`text-xs px-2.5 py-1.5 rounded-md text-white transition disabled:opacity-60 ${
-                  item.served_by ? 'bg-red-500 hover:bg-red-600' : 'bg-emerald-600 hover:bg-emerald-700'
-                }`}
-                aria-label={item.served_by ? '되돌리기' : '처리'}
+                disabled={loadingIdx === idx}
+                style={{
+                  fontSize: '12px', fontWeight: 700, padding: '6px 14px', borderRadius: '100px', border: 'none',
+                  background: item.served_by ? '#FFF2F1' : '#EBF3FE',
+                  color: item.served_by ? '#F04452' : '#3182F6',
+                  cursor: 'pointer', opacity: loadingIdx === idx ? 0.5 : 1,
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  whiteSpace: 'nowrap', transition: 'all 0.15s ease',
+                }}
               >
-                <span className="inline-flex items-center gap-1">
-                  {item.served_by ? (
-                    <>
-                      <Undo2 className="w-3.5 h-3.5" /> 되돌리기
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-3.5 h-3.5" /> 처리
-                    </>
-                  )}
-                </span>
+                {item.served_by
+                  ? <><Undo2 size={11} /> 되돌리기</>
+                  : <><CheckCircle2 size={11} /> 처리</>}
               </button>
             )}
-          </li>
+          </div>
         ))}
-      </ul>
-
-      {/* Summary strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm mb-2">
-        <div className={`flex items-center gap-2 rounded-lg p-2 ${zoneMeta.faint}`}>
-          <Receipt className="w-4 h-4" />
-          총 금액: <span className="font-semibold">{order.total.toLocaleString('ko-KR')}원</span>
-        </div>
-        <div className="flex items-center gap-2 rounded-lg p-2 bg-gray-50 min-w-0">
-          <Music className="w-4 h-4" />
-          <span className="truncate" title={order.song || ''}>요청곡: {order.song || '-'}</span>
-        </div>
-        <div className="flex items-center gap-2 rounded-lg p-2 bg-gray-50">
-          <Timer className="w-4 h-4" />
-          주문 시각:{' '}
-          {new Date(order.timestamp).toLocaleTimeString('ko-KR', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-          })}
-        </div>
       </div>
 
-      {/* Proof (image) */}
+      {/* Summary strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', padding: '10px 16px', borderTop: '1px solid var(--border, #E5E8EB)', background: 'var(--surface3, #F2F4F6)' }}>
+        {[
+          { icon: <Receipt size={12} />,  label: '금액',    value: `${order.total.toLocaleString('ko-KR')}원` },
+          { icon: <Music size={12} />,    label: '요청곡',  value: order.song || '-' },
+          { icon: <Timer size={12} />,    label: '주문시각', value: new Date(order.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) },
+        ].map(({ icon, label, value }) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#6B7684', overflow: 'hidden' }}>
+            <span style={{ flexShrink: 0 }}>{icon}</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <strong>{label}</strong> {value}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Proof image */}
       {order.image_path && (
-        <div className="mt-2">
-          <button
-            onClick={() => setShowProof((v) => !v)}
-            className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100"
-          >
-            <ImageIcon className="w-3.5 h-3.5" /> {showProof ? '증빙 숨기기' : '증빙 보기'}
+        <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border, #E5E8EB)' }}>
+          <button onClick={() => setShowProof(v => !v)} style={{
+            display: 'inline-flex', alignItems: 'center', gap: '5px',
+            fontSize: '12px', fontWeight: 700, padding: '6px 14px', borderRadius: '100px', border: 'none',
+            background: 'var(--primary-light, #EBF3FE)', color: 'var(--primary, #3182F6)', cursor: 'pointer',
+          }}>
+            <ImageIcon size={12} /> {showProof ? '증빙 숨기기' : '증빙 보기'}
           </button>
           {showProof && (
             <img
               src={`${process.env.REACT_APP_API_BASE_URL}/uploads/${order.image_path.replace(/^uploads\//, '')}?v=2`}
-              crossOrigin="anonymous"
-              alt="증빙"
-              className="mt-3 w-full max-h-64 object-contain rounded-lg border"
-              onError={(e) => {
-                const target = e.currentTarget as HTMLImageElement;
-                target.style.display = 'none';
-              }}
+              crossOrigin="anonymous" alt="증빙"
+              style={{ display: 'block', marginTop: '10px', width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '12px', border: '1px solid var(--border, #E5E8EB)' }}
+              onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
             />
           )}
         </div>
       )}
 
-      {/* CTA */}
-      {!order.processed && allItemsServed && (
-        <div className="mt-4 flex justify-end">
+      {/* Complete CTA */}
+      {!order.processed && allServed && (
+        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border, #E5E8EB)', display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={handleComplete}
             disabled={isCompleting}
-            className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg shadow-lg transition disabled:opacity-60"
+            style={{
+              padding: '10px 24px', borderRadius: '100px', border: 'none',
+              background: '#3182F6', color: '#fff', fontSize: '14px', fontWeight: 800,
+              cursor: 'pointer', opacity: isCompleting ? 0.6 : 1,
+              boxShadow: '0 4px 16px rgba(49,130,246,0.3)',
+              letterSpacing: '-0.02em',
+            }}
           >
-            {isCompleting ? '처리 중…' : '전체 처리'}
+            {isCompleting ? '처리 중…' : '✅ 전체 처리 완료'}
           </button>
         </div>
       )}

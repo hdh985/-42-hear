@@ -1,187 +1,140 @@
-// src/AdminComponents/WaitingManager.tsx
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
 import AdminWaitingItem from './AdminWaitingItem';
-import { Search, RefreshCw, Loader2, Users, Bell, X } from 'lucide-react';
+import { Search, RefreshCw, Loader2, Users, X } from 'lucide-react';
 
-
-
-interface WaitingEntry {
-  id: number;
-  name: string;
-  phone: string;
-  tableSize: number;
-  timestamp: string;
-}
+interface WaitingEntry { id: number; name: string; phone: string; tableSize: number; timestamp: string; }
 
 export default function WaitingManager() {
-  // ===== State =====
-  const [waitingList, setWaitingList] = useState<WaitingEntry[]>([]);
-  const [query, setQuery] = useState('');
-  const [isFetching, setIsFetching] = useState(false);
+  const [list, setList]               = useState<WaitingEntry[]>([]);
+  const [query, setQuery]             = useState('');
+  const [isFetching, setIsFetching]   = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
-  // ===== Refs =====
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hasMountedRef = useRef(false);
-  const prevIdsRef = useRef<number[]>([]);
+  const audioRef       = useRef<HTMLAudioElement | null>(null);
+  const hasMounted     = useRef(false);
+  const prevIds        = useRef<number[]>([]);
+  const abortRef       = useRef<AbortController | null>(null);
+  const lastVersionRef = useRef<string | null>(null);   // X-Data-Version 추적
 
-  // ===== Fetch =====
   const fetchList = useCallback(async () => {
+    // 이전 요청이 아직 진행 중이면 취소
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
     try {
       setIsFetching(true);
-      const res = await axios.get<WaitingEntry[]>(`${process.env.REACT_APP_API_BASE_URL}/api/admin/waiting`);
+      const res = await axios.get<WaitingEntry[]>(
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/waiting`,
+        { signal: abortRef.current.signal }
+      );
 
-      // 오래 기다린 순으로 보여주기: 오래된 → 최신 (timestamp asc)
-      const sorted = [...res.data].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-
-      // 알림음: 신규 항목 감지 (초기 로드 제외)
-      const currentIds = sorted.map(e => e.id);
-      if (hasMountedRef.current && audioRef.current) {
-        const prev = new Set(prevIdsRef.current);
-        const hasNew = currentIds.some(id => !prev.has(id));
-        if (hasNew) {
-          try { await audioRef.current.play(); } catch {}
-        }
-      }
-      prevIdsRef.current = currentIds;
-
-      setWaitingList(sorted);
       setLastUpdated(new Date());
-      hasMountedRef.current = true;
-    } catch (e) {
-      console.error('목록 불러오기 실패', e);
+
+      // 버전 동일 → 변경 없음, 리렌더 생략
+      const v = res.headers['x-data-version'] as string | undefined;
+      if (v !== undefined && v === lastVersionRef.current) return;
+      lastVersionRef.current = v ?? null;
+
+      const sorted = [...res.data].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+      const cur = sorted.map(e => e.id);
+      if (hasMounted.current && audioRef.current) {
+        const prev = new Set(prevIds.current);
+        if (cur.some(id => !prev.has(id))) { try { await audioRef.current.play(); } catch {} }
+      }
+      prevIds.current = cur;
+      setList(sorted);
+      hasMounted.current = true;
+    } catch (e: any) {
+      if (e?.name === 'CanceledError' || e?.name === 'AbortError' || axios.isCancel(e)) return;
+      console.error(e);
     } finally {
       setIsFetching(false);
     }
   }, []);
 
-  // ===== Mount =====
   useEffect(() => {
     audioRef.current = new Audio('/alert.mp3');
     fetchList();
+    return () => { abortRef.current?.abort(); };
   }, [fetchList]);
 
-  // ===== Polling =====
   useEffect(() => {
     if (!autoRefresh) return;
-    const id = setInterval(fetchList, 5000);
-    return () => clearInterval(id);
+    const t = setInterval(fetchList, 5000);
+    return () => clearInterval(t);
   }, [autoRefresh, fetchList]);
 
-  // ===== Actions =====
   const handleRemove = async (id: number) => {
-    try {
-      await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/waiting/admin/${id}`);
-      fetchList();
-    } catch (e) {
-      alert('삭제 실패');
-      console.error(e);
-    }
+    try { await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/api/waiting/admin/${id}`); fetchList(); }
+    catch { alert('삭제 실패'); }
   };
 
-  // 완료(호출 처리 등) → 현재 백엔드는 별도 상태가 없으므로 삭제로 대체
-  const handleComplete = (id: number) => handleRemove(id);
-
-  // ===== Derived =====
-  const normalized = query.trim().toLowerCase();
+  const q = query.trim().toLowerCase();
   const filtered = useMemo(() => {
-    if (!normalized) return waitingList;
-    return waitingList.filter(e => {
-      const name = (e.name || '').toLowerCase();
-      const phone = (e.phone || '').toLowerCase();
-      const table = String(e.tableSize);
-      return name.includes(normalized) || phone.includes(normalized) || table.includes(normalized);
-    });
-  }, [waitingList, normalized]);
+    if (!q) return list;
+    return list.filter(e =>
+      (e.name || '').toLowerCase().includes(q) ||
+      (e.phone || '').toLowerCase().includes(q) ||
+      String(e.tableSize).includes(q)
+    );
+  }, [list, q]);
 
-  // 통계
-  const totalCount = filtered.length;
   const avgGroup = filtered.length ? Math.round(filtered.reduce((s, v) => s + (v.tableSize || 0), 0) / filtered.length) : 0;
 
-  // ===== UI =====
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div style={{ maxWidth: '720px', margin: '0 auto', padding: '16px' }}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">⏳ 웨이팅 명단 (관리자)</h2>
-          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl ring-1 ring-blue-200 bg-blue-50 text-blue-700">
-              <Users className="w-4 h-4" /> 대기 {totalCount}건
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '14px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {[
+            { icon: <Users size={13} />, text: `대기 ${filtered.length}건`, color: '#3182F6', bg: '#EBF3FE' },
+            { icon: null, text: `평균 ${avgGroup}명`, color: '#6B7684', bg: '#F2F4F6' },
+          ].map(({ icon, text, color, bg }) => (
+            <div key={text} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '7px 14px', borderRadius: '100px', background: bg, fontSize: '13px', fontWeight: 700, color }}>
+              {icon}{text}
             </div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl ring-1 ring-slate-200 bg-slate-50 text-slate-700">
-              평균 인원 {avgGroup}명
-            </div>
-          </div>
+          ))}
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={fetchList}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow"
-          >
-            {isFetching ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} 새로고침
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {lastUpdated && <span style={{ fontSize: '11px', color: '#B0B8C1' }}>{lastUpdated.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>}
+          <button onClick={fetchList} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '100px', border: 'none', background: '#3182F6', color: '#fff', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+            {isFetching ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <RefreshCw size={13} />} 새로고침
           </button>
-          <div className="text-xs text-gray-500 min-w-[9rem] text-right">
-            {lastUpdated ? `업데이트: ${lastUpdated.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : '업데이트 대기'}
-          </div>
         </div>
       </div>
 
       {/* Controls */}
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-y py-3 mb-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch">
-          {/* Search */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="이름/전화/인원 검색"
-              className="w-full pl-9 pr-9 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-200"
+      <div style={{ position: 'sticky', top: '56px', zIndex: 10, background: 'rgba(242,244,246,0.95)', backdropFilter: 'blur(12px)', paddingBottom: '12px', marginBottom: '14px' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', paddingTop: '12px' }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Search size={14} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#B0B8C1' }} />
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="이름/전화/인원 검색" style={{
+              width: '100%', padding: '11px 40px', borderRadius: '12px', border: '1px solid #E5E8EB',
+              fontSize: '14px', outline: 'none', background: '#fff', letterSpacing: '-0.01em', boxSizing: 'border-box',
+              transition: 'border-color 0.15s',
+            }}
+              onFocus={e => { e.target.style.borderColor = '#3182F6'; }}
+              onBlur={e => { e.target.style.borderColor = '#E5E8EB'; }}
             />
-            {query && (
-              <button
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
-                onClick={() => setQuery('')}
-                aria-label="검색어 지우기"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
+            {query && <button onClick={() => setQuery('')} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#B0B8C1', cursor: 'pointer', display: 'flex' }}><X size={14} /></button>}
           </div>
-
-          {/* Auto refresh toggle */}
-          <label className="inline-flex items-center gap-2 text-sm select-none">
-            <input
-              type="checkbox"
-              className="accent-blue-600 w-4 h-4"
-              checked={autoRefresh}
-              onChange={(e) => setAutoRefresh(e.target.checked)}
-            />
-            자동 새로고침
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#6B7684', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <input type="checkbox" checked={autoRefresh} onChange={e => setAutoRefresh(e.target.checked)} style={{ accentColor: '#3182F6', width: '15px', height: '15px' }} />
+            자동 갱신
           </label>
-
-          <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500">
-            <Bell className="w-4 h-4" /> 신규 대기자 등록 시 알림음
-          </div>
         </div>
       </div>
 
       {/* List */}
       {filtered.length === 0 ? (
-        <div className="p-6 border rounded-xl text-center text-gray-500 bg-slate-50">대기자가 없습니다.</div>
+        <div style={{ padding: '40px', textAlign: 'center', background: '#fff', borderRadius: '16px', color: '#B0B8C1', fontSize: '14px', border: '1px solid #E5E8EB' }}>
+          대기자가 없습니다
+        </div>
       ) : (
-        <div className="space-y-3">
-          {filtered.map((entry) => (
-            <AdminWaitingItem
-              key={entry.id}
-              entry={entry}
-              isProcessed={false}
-              onDelete={handleRemove}
-              onToggle={handleComplete} // 완료 처리 = 삭제로 대체
-            />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {filtered.map(entry => (
+            <AdminWaitingItem key={entry.id} entry={entry} isProcessed={false} onDelete={handleRemove} onToggle={handleRemove} />
           ))}
         </div>
       )}

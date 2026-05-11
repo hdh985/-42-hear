@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
-import OrderForm, { CartItem } from './OrderForm';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import OrderForm, { CartItem } from './OrderForm';
 
 interface CartModalProps {
   isOpen: boolean;
@@ -12,137 +12,156 @@ interface CartModalProps {
 }
 
 const CartModal: React.FC<CartModalProps> = ({
-  isOpen,
-  toggleOrder,
-  cartItems,
-  cartTotal,
-  cartCount,
-  updateCartItem,
+  isOpen, toggleOrder, cartItems, cartTotal, cartCount, updateCartItem,
 }) => {
-  // ESC 닫기 + 바디 스크롤 락
+  const sheetRef   = useRef<HTMLDivElement>(null);
+  const dragStart  = useRef(0);
+  const dragging   = useRef(false);
+
   useEffect(() => {
     if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') toggleOrder();
-    };
-    const prevOverflow = document.body.style.overflow;
+    const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') toggleOrder(); };
     window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = prevOverflow;
+      document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
     };
   }, [isOpen, toggleOrder]);
 
-  // 모달 열릴 때 하단 카트바 숨기기 / 닫히면 복구
-  useEffect(() => {
-    const sticky =
-      (document.querySelector('[data-sticky-cart]') as HTMLElement | null) ||
-      (document.querySelector('#sticky-cart-bar') as HTMLElement | null) ||
-      (document.querySelector('.sticky-cart-bar') as HTMLElement | null);
-    if (!sticky) return;
-    if (isOpen) {
-      sticky.setAttribute('aria-hidden', 'true');
-      sticky.classList.add('hidden');
+  /* Swipe-down-to-dismiss — only on the grabber/header area */
+  const onGrabStart = (e: React.TouchEvent) => {
+    dragStart.current = e.touches[0].clientY;
+    dragging.current  = true;
+    if (sheetRef.current) sheetRef.current.style.transition = 'none';
+  };
+
+  const onGrabMove = (e: React.TouchEvent) => {
+    if (!dragging.current || !sheetRef.current) return;
+    const dy = Math.max(0, e.touches[0].clientY - dragStart.current);
+    sheetRef.current.style.transform = `translateY(${dy}px)`;
+  };
+
+  const onGrabEnd = (e: React.TouchEvent) => {
+    if (!dragging.current || !sheetRef.current) return;
+    dragging.current = false;
+    const dy = Math.max(0, e.changedTouches[0].clientY - dragStart.current);
+    if (dy > 120) {
+      toggleOrder();
     } else {
-      sticky.removeAttribute('aria-hidden');
-      sticky.classList.remove('hidden');
+      sheetRef.current.style.transition = 'transform 0.32s cubic-bezier(.32,.72,0,1)';
+      sheetRef.current.style.transform  = 'translateY(0)';
+      const el = sheetRef.current;
+      setTimeout(() => { el.style.transition = ''; }, 340);
     }
-    return () => {
-      sticky.removeAttribute('aria-hidden');
-      sticky.classList.remove('hidden');
-    };
-  }, [isOpen]);
+  };
 
   if (!isOpen) return null;
 
-  const css = `
-    @keyframes sheet-up {
-      0% { transform: translateY(8%); opacity: 0; }
-      100% { transform: translateY(0); opacity: 1; }
-    }
-    @keyframes overlay-fade {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
-    @keyframes runway {
-      0% { background-position: 0 0, 0 0; }
-      100% { background-position: 56px 0, -56px 0; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .animate-sheet-up, .animate-overlay, .animate-runway { animation: none !important; transform: none !important; opacity: 1 !important; }
-    }
-  `;
-
-  const content = (
+  return createPortal(
     <>
-      <style dangerouslySetInnerHTML={{ __html: css }} />
-
-      {/* Overlay */}
+      {/* Backdrop */}
       <div
-        role="presentation"
         aria-hidden
-        className="fixed inset-0 z-[100] animate-overlay"
-        style={{
-          animation: 'overlay-fade .18s ease-out',
-          background:
-            'radial-gradient(1200px 400px at 50% -200px, rgba(44,127,255,0.22) 0%, rgba(0,0,0,0) 65%), rgba(0,0,0,.55)',
-          backdropFilter: 'blur(2px)'
-        }}
         onClick={toggleOrder}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          animation: 'fade-in 0.2s ease both',
+        }}
       />
 
-      {/* Bottom sheet */}
-      <div className="fixed inset-x-0 bottom-0 z-[110]" aria-live="polite">
+      {/* Sheet */}
+      <div
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="주문서"
+        style={{
+          position: 'fixed', insetInline: 0, bottom: 0, zIndex: 110,
+          margin: '0 auto',
+          maxWidth: '480px',
+          maxHeight: '92dvh',
+          display: 'flex',
+          flexDirection: 'column',
+          borderRadius: '24px 24px 0 0',
+          background: 'var(--surface)',
+          boxShadow: '0 -8px 48px rgba(0,0,0,0.16)',
+          animation: 'slide-up-sheet 0.36s cubic-bezier(.32,.72,0,1) both',
+          overflow: 'hidden',
+          willChange: 'transform',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Drag handle — swipe target */}
         <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="주문서 모달"
-          className="mx-auto w-full max-w-md overflow-hidden rounded-t-2xl border-x-4 border-t-4 border-sky-900 shadow-2xl animate-sheet-up"
-          style={{
-            animation: 'sheet-up .22s cubic-bezier(.2,.8,.2,1)',
-            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px))',
-            backgroundImage:
-              'linear-gradient(180deg, rgba(10,26,58,0.96) 0%, rgba(9,22,48,0.96) 100%), radial-gradient(1200px 400px at 50% -200px, rgba(44,127,255,0.18) 0%, rgba(0,0,0,0) 70%)'
-          }}
-          onClick={(e) => e.stopPropagation()}
+          onTouchStart={onGrabStart}
+          onTouchMove={onGrabMove}
+          onTouchEnd={onGrabEnd}
+          style={{ flexShrink: 0, cursor: 'grab', userSelect: 'none' }}
         >
-          {/* Grabber + 상단 바 */}
-          <div className="sticky top-0 z-10 bg-sky-900/40 backdrop-blur">
-            <div className="flex items-center justify-center pt-2">
-              <span className="mb-2 h-1.5 w-12 rounded-full bg-sky-300/60" />
-            </div>
-            {/* 활주로 러닝 라이트 */}
-            <div
-              aria-hidden
-              className="animate-runway h-1"
-              style={{
-                backgroundImage:
-                  'linear-gradient(90deg, rgba(255,255,255,0.28) 25%, transparent 25% 50%, rgba(255,255,255,0.28) 50% 75%, transparent 75%), linear-gradient(90deg, rgba(255,255,255,0.14) 25%, transparent 25% 50%, rgba(255,255,255,0.14) 50% 75%, transparent 75%)',
-                backgroundSize: '56px 2px, 56px 2px',
-                animation: 'runway 4s linear infinite'
-              }}
-            />
+          {/* Grabber pill */}
+          <div style={{ padding: '12px 0 0', display: 'flex', justifyContent: 'center' }}>
+            <div style={{
+              width: '36px', height: '4px',
+              borderRadius: '100px',
+              background: 'var(--border)',
+            }} />
           </div>
 
-          {/* Content */}
-          <div className="max-h-[88vh] overflow-y-auto overscroll-contain">
-            <OrderForm
-              cartItems={cartItems}
-              cartTotal={cartTotal}
-              cartCount={cartCount}
-              toggleOrder={toggleOrder}
-              updateCartItem={updateCartItem}
-              // scrollToBottomOnMount
-            />
+          {/* Header */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '10px 20px 14px',
+          }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.03em' }}>
+                주문하기
+              </h2>
+              <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                {cartCount}개 항목 · {cartTotal.toLocaleString()}원
+              </p>
+            </div>
+            <button
+              onPointerUp={toggleOrder}
+              onClick={e => e.preventDefault()}
+              aria-label="닫기"
+              style={{
+                width: '32px', height: '32px',
+                borderRadius: '50%',
+                border: 'none',
+                background: 'var(--surface3)',
+                color: 'var(--text-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '16px',
+              }}
+            >
+              ✕
+            </button>
           </div>
         </div>
-      </div>
-    </>
-  );
 
-  return createPortal(content, document.body);
-  // 포털 미사용 시: return content;
+        {/* Divider */}
+        <div style={{ height: '1px', background: 'var(--border)', flexShrink: 0 }} />
+
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+          <OrderForm
+            cartItems={cartItems}
+            cartTotal={cartTotal}
+            cartCount={cartCount}
+            toggleOrder={toggleOrder}
+            updateCartItem={updateCartItem}
+          />
+        </div>
+      </div>
+    </>,
+    document.body
+  );
 };
 
 export default CartModal;

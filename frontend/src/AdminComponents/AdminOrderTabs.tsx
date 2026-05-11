@@ -1,5 +1,5 @@
 // AdminOrderTabs.tsx
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import AdminOrderItem from './AdminOrderItem';
 import { Coffee, Cigarette, Users } from 'lucide-react';
 
@@ -59,12 +59,7 @@ export default function AdminOrderTabs({
 }: AdminOrderTabsProps) {
   const [active, setActive] = useState<'돌다방' | '흡연부스'>(defaultTab);
 
-  // 1초마다 now 갱신 → 경과시간 실시간 업데이트
-  const [now, setNow] = useState<number>(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  // elapsed 타이머는 AdminOrderItem 내부로 이동 — 여기선 불필요
 
   // AdminOrderItem에 넘길 onRefresh: 반환값 무시하여 () => void 시그니처 보장
   const onRefreshVoid = useCallback(() => { void onRefresh(); }, [onRefresh]);
@@ -142,18 +137,14 @@ export default function AdminOrderTabs({
             현재 {active}에 표시할 주문이 없습니다.
           </div>
         ) : (
-          list.map((o) => {
-            const elapsed = Math.max(0, Math.floor((now - safeParseTime(o.timestamp)) / 1000));
-            return (
-              <AdminOrderItem
-                key={o.id}
-                order={o}
-                elapsed={elapsed}
-                adminName={adminName}
-                onRefresh={onRefreshVoid}
-              />
-            );
-          })
+          list.map((o) => (
+            <AdminOrderItem
+              key={o.id}
+              order={o}
+              adminName={adminName}
+              onRefresh={onRefreshVoid}
+            />
+          ))
         )}
       </div>
     </div>

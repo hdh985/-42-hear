@@ -1,252 +1,170 @@
-// OrderForm.tsx — World Tour (Boarding Pass) Theme
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import { DollarSign, Upload, Check, X, Plus, Minus, Copy, Trash2 } from 'lucide-react';
+import { Check, Copy, Minus, Plus, Trash2, Upload, X } from 'lucide-react';
 import PolicyModal from './PolicyModal';
 
-export interface CartItem {
-  id: string;
-  title: string;
-  price: number;
-  quantity: number;
-}
+export interface CartItem { id: string; title: string; price: number; quantity: number; }
 
 interface OrderFormProps {
   cartItems: CartItem[];
   cartTotal: number;
   cartCount: number;
   toggleOrder: () => void;
-  updateCartItem: (id: string, quantity: number) => void;
+  updateCartItem: (id: string, qty: number) => void;
   scrollToBottomOnMount?: boolean;
 }
 
-const bankInfo = {
-  bank: '토스뱅크',
-  account: '1001-9279-2832',
-  name: '이수연',
-};
+const BANK = { bank: '토스뱅크', account: '1001-9279-2832', name: '이수연' };
 
-const SEAT_FEE_PER_PERSON = 0;
-
-function getScrollParent(node: HTMLElement | null): HTMLElement | Window {
-  let cur: HTMLElement | null = node;
-  while (cur) {
-    const style = window.getComputedStyle(cur);
-    const overflowY = style.overflowY;
-    const isScrollable = /(auto|scroll|overlay)/.test(overflowY) && cur.scrollHeight > cur.clientHeight;
-    if (isScrollable) return cur;
-    cur = cur.parentElement;
-  }
-  return window;
+function resizeImage(file: File, maxSide = 800, q = 0.9): Promise<File> {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.src = url;
+    img.onload = () => {
+      const r = Math.min(maxSide / Math.max(img.width, img.height), 1);
+      const w = Math.round(img.width * r), h = Math.round(img.height * r);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d')?.drawImage(img, 0, 0, w, h);
+      const isPNG = file.type === 'image/png';
+      const mime = isPNG ? 'image/png' : 'image/jpeg';
+      c.toBlob(blob => {
+        URL.revokeObjectURL(url);
+        if (!blob) return resolve(file);
+        resolve(new File([blob], file.name.replace(/\.[^.]+$/i, isPNG ? '.png' : '.jpg'), { type: mime }));
+      }, mime, isPNG ? undefined : q);
+    };
+  });
 }
 
+const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+  <div style={{ marginBottom: '8px' }}>
+    <p style={{
+      margin: '0 0 10px', padding: '0 20px',
+      fontSize: '13px', fontWeight: 700,
+      color: 'var(--text-muted)', letterSpacing: '-0.01em',
+    }}>{title}</p>
+    <div style={{ background: 'var(--surface)', borderRadius: '16px', overflow: 'hidden', margin: '0 16px' }}>
+      {children}
+    </div>
+  </div>
+);
+
 const OrderForm: React.FC<OrderFormProps> = ({
-  cartItems,
-  cartTotal,
-  cartCount,
-  toggleOrder,
-  updateCartItem,
-  scrollToBottomOnMount = false,
+  cartItems, cartTotal, toggleOrder, updateCartItem,
 }) => {
-  const [orderComplete, setOrderComplete] = useState(false);
-  const [userInfo, setUserInfo] = useState({
-    name: '',
-    phone: '',
-    privacyAgree: false,
-    termsAgree: false,
-  });
-  const [paymentImage, setPaymentImage] = useState<File | null>(null);
-  const [orderNumber, setOrderNumber] = useState('');
-  const [tableSize, setTableSize] = useState<number>(2);
+  const [done, setDone] = useState(false);
+  const [info, setInfo] = useState({ name: '', phone: '', privacyAgree: false, termsAgree: false });
+  const [image, setImage] = useState<File | null>(null);
+  const [orderNum, setOrderNum] = useState('');
+  const [people, setPeople] = useState(2);
   const [copied, setCopied] = useState(false);
-  const [showTerms, setShowTerms] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  // ✈️ 주문 성공 시 표시할 비행기 오버레이 상태
-  const [showPlane, setShowPlane] = useState(false);
-
-  const seatFeeTotal = tableSize * SEAT_FEE_PER_PERSON;
-  const finalTotal = cartTotal + seatFeeTotal;
-
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!scrollToBottomOnMount) return;
-    const el = rootRef.current;
-    const scroller = getScrollParent(el);
-    const scrollToBottom = () => {
-      if (scroller === window) {
-        const height = Math.max(
-          document.documentElement.scrollHeight,
-          document.body.scrollHeight
-        );
-        window.scrollTo({ top: height, behavior: 'auto' });
-      } else {
-        const s = scroller as HTMLElement;
-        s.scrollTop = s.scrollHeight;
-      }
-    };
-    const raf = requestAnimationFrame(scrollToBottom);
-    return () => cancelAnimationFrame(raf);
-  }, [scrollToBottomOnMount]);
-
-  const resizeImage = (file: File, maxSide = 800, quality = 0.9): Promise<File> => {
-    return new Promise((resolve) => {
-      const objectUrl = URL.createObjectURL(file);
-      const img = new Image();
-      img.src = objectUrl;
-
-      img.onload = () => {
-        let { width, height } = img;
-        const longer = Math.max(width, height);
-        const ratio = Math.min(maxSide / longer, 1);
-        const targetW = Math.round(width * ratio);
-        const targetH = Math.round(height * ratio);
-
-        const canvas = document.createElement('canvas');
-        canvas.width = targetW;
-        canvas.height = targetH;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, targetW, targetH);
-
-        const isPNG = file.type === 'image/png';
-        const mime = isPNG ? 'image/png' : 'image/jpeg';
-
-        canvas.toBlob(
-          (blob) => {
-            URL.revokeObjectURL(objectUrl);
-            if (!blob) return resolve(file);
-            const ext = isPNG ? '.png' : '.jpg';
-            const name = file.name.replace(/\.[^.]+$/i, ext);
-            resolve(new File([blob], name, { type: mime }));
-          },
-          mime,
-          isPNG ? undefined : quality
-        );
-      };
-    });
-  };
-
-  const handleInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setUserInfo((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setInfo(p => ({ ...p, [name]: type === 'checkbox' ? checked : value }));
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const resized = await resizeImage(file, 300, 0.9);
-    setPaymentImage(resized);
+  const handleImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) setImage(await resizeImage(f, 300, 0.9));
   };
 
   const copyAccount = () => {
-    navigator.clipboard.writeText(bankInfo.account).then(() => {
+    navigator.clipboard.writeText(BANK.account).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      setTimeout(() => setCopied(false), 1800);
     });
   };
 
-  const completeOrder = async () => {
-    const { name, phone, privacyAgree, termsAgree } = userInfo;
-    if (!name || !phone || !privacyAgree || !termsAgree || !paymentImage) {
-      alert('모든 필수 정보를 입력해주세요.');
+  const submit = async () => {
+    if (submitting) return;
+    const { name, phone, privacyAgree, termsAgree } = info;
+    if (!name || !phone || !privacyAgree || !termsAgree || !image) {
+      alert('모든 필수 항목을 입력해주세요.');
       return;
     }
-
-    const items = [
-      ...cartItems.map((item) => `${item.title} x ${item.quantity}`),
-      `자리세 x ${tableSize}명 (₩${seatFeeTotal.toLocaleString()})`,
-    ];
-
-    const formData = new FormData();
-    formData.append('table', phone);
-    formData.append('name', name);
-    formData.append('items', JSON.stringify(items));
-    formData.append('total', finalTotal.toString());
-    formData.append('song', '');
-    formData.append('payment_image', paymentImage);
-    formData.append('table_size', tableSize.toString());
-    formData.append('seat_fee', seatFeeTotal.toString());
-    formData.append('consent_privacy', privacyAgree.toString());
-    formData.append('consent_terms', termsAgree.toString());
-
+    setSubmitting(true);
+    const fd = new FormData();
+    fd.append('table', phone);
+    fd.append('name', name);
+    fd.append('items', JSON.stringify(cartItems.map(i => `${i.title} x ${i.quantity}`)));
+    fd.append('total', cartTotal.toString());
+    fd.append('song', '');
+    fd.append('payment_image', image);
+    fd.append('table_size', people.toString());
+    fd.append('seat_fee', '0');
+    fd.append('consent_privacy', privacyAgree.toString());
+    fd.append('consent_terms', termsAgree.toString());
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/orders`, formData);
-      setOrderNumber(`BOARDING-${response.data.order_id}`);
-
-      // ✈️ 1) 비행기 애니메이션 시작
-      setShowPlane(true);
-
-      // ⏱️ 2) 애니메이션 후 완료 화면 전환
-      const DURATION = 1200; // 1.2s
-      setTimeout(() => {
-        setShowPlane(false);
-        setOrderComplete(true);
-      }, DURATION);
-    } catch (error) {
-      alert('메뉴 신청 실패');
-      console.error(error);
+      const res = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/orders`, fd);
+      setOrderNum(`#${res.data.order_id}`);
+      setDone(true);
+    } catch {
+      alert('주문 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  // ✈️ 비행기/트레일 CSS (prefers-reduced-motion 대응)
-  const planeCss = `
-@keyframes plane-fly-in {
-  0%   { transform: translateX(-60vw) translateY(0) scale(.9); opacity: 0; }
-  60%  { opacity: 1; }
-  100% { transform: translateX(0) translateY(0) scale(1); opacity: 1; }
-}
-@keyframes trail-dots {
-  0% { stroke-dashoffset: 80; opacity: .0; }
-  20% { opacity: .35; }
-  100% { stroke-dashoffset: 0; opacity: .35; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .plane-anim, .trail-anim { animation: none !important; }
-}
-`;
+  const isValid = !!(info.name && info.phone && info.privacyAgree && info.termsAgree && image);
 
-  if (orderComplete) {
+  /* ─── Complete screen ─── */
+  if (done) {
     return (
-      <div
-        className="rounded-2xl border-4 border-sky-900 p-6 space-y-5"
-        style={{
-          backgroundImage:
-            'linear-gradient(180deg, rgba(10,26,58,0.96) 0%, rgba(9,22,48,0.96) 100%), radial-gradient(1200px 400px at 50% -200px, rgba(44,127,255,0.18) 0%, rgba(0,0,0,0) 70%)'
-        }}
-      >
-        <div className="text-center text-sky-50">
-          <h3 className="mb-2 text-xl font-extrabold text-amber-300">메뉴 주문 완료!</h3>
-          <div className="mx-auto grid h-20 w-20 place-items-center rounded-full border-4 border-emerald-800 bg-emerald-600 text-white shadow">
-            <Check size={32} />
-          </div>
-          <p className="mt-3 text-sm font-medium text-sky-200">입금 확인 후 메뉴 서빙을 시작합니다.</p>
-          {orderNumber && (
-            <p className="mt-2 text-xs text-sky-300/90">보딩 넘버: <span className="font-bold text-amber-200">{orderNumber}</span></p>
-          )}
+      <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+        <div className="animate-scale-in" style={{
+          width: '80px', height: '80px', margin: '0 auto 20px',
+          borderRadius: '50%',
+          background: 'var(--success-bg)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Check size={36} color="var(--success)" strokeWidth={2.5} />
         </div>
+        <h2 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.04em' }}>
+          주문 완료!
+        </h2>
+        {orderNum && (
+          <p style={{ margin: '0 0 8px', fontSize: '14px', color: 'var(--text-muted)', letterSpacing: '-0.01em' }}>
+            주문번호 <strong style={{ color: 'var(--primary)' }}>{orderNum}</strong>
+          </p>
+        )}
+        <p style={{ margin: '0 0 32px', fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+          입금 확인 후 서빙을 시작합니다.
+        </p>
 
-        <div className="rounded-xl border-2 border-sky-700 bg-sky-900/40 p-4 shadow-lg text-sky-50">
-          <h4 className="mb-3 border-b border-sky-700/60 pb-2 text-base font-bold text-sky-100">주문 내역</h4>
-          {cartItems.map((item) => (
-            <div key={item.id} className="flex justify-between py-1 text-sm">
-              <span className="text-sky-100/90">{item.title} x {item.quantity}</span>
-              <span className="tabular-nums font-bold text-amber-200">
-                ₩{(item.price * item.quantity).toLocaleString()}
+        {/* Summary */}
+        <div style={{ background: 'var(--surface3)', borderRadius: '16px', padding: '16px', marginBottom: '20px', textAlign: 'left' }}>
+          {cartItems.map(i => (
+            <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: '14px' }}>
+              <span style={{ color: 'var(--text-muted)' }}>{i.title} × {i.quantity}</span>
+              <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
+                {(i.price * i.quantity).toLocaleString()}원
               </span>
             </div>
           ))}
-          <div className="mt-2 border-t border-sky-700/60 pt-2 text-base font-bold">
-            <div className="flex justify-between text-amber-200">
-              <span>총 결제 금액</span>
-              <span className="tabular-nums">₩{finalTotal.toLocaleString()}</span>
-            </div>
+          <div style={{ borderTop: '1px solid var(--border)', marginTop: '10px', paddingTop: '12px', display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontWeight: 700 }}>합계</span>
+            <span style={{ fontWeight: 900, color: 'var(--primary)', fontSize: '17px', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>
+              {cartTotal.toLocaleString()}원
+            </span>
           </div>
         </div>
 
         <button
           onClick={toggleOrder}
-          className="w-full rounded-lg border-2 border-amber-300 bg-amber-300 px-4 py-3 font-bold text-[#0a1220] shadow hover:bg-amber-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+          style={{
+            width: '100%', padding: '16px',
+            borderRadius: '14px', border: 'none',
+            background: 'var(--surface3)',
+            color: 'var(--text)',
+            fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+            letterSpacing: '-0.02em',
+          }}
         >
           닫기
         </button>
@@ -254,304 +172,267 @@ const OrderForm: React.FC<OrderFormProps> = ({
     );
   }
 
-  return (
-    <div
-      ref={rootRef}
-      className="rounded-2xl border-4 border-sky-900 p-4 text-sm text-sky-50"
-      style={{
-        backgroundImage:
-          'linear-gradient(180deg, rgba(10,26,58,0.96) 0%, rgba(9,22,48,0.96) 100%), radial-gradient(1200px 400px at 50% -200px, rgba(44,127,255,0.18) 0%, rgba(0,0,0,0) 70%)'
-      }}
-    >
-      {/* ✈️ plane CSS */}
-      <style dangerouslySetInnerHTML={{ __html: planeCss }} />
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '16px 18px',
+    background: 'transparent',
+    border: 'none',
+    color: 'var(--text)',
+    fontSize: '16px',   /* must be ≥ 16px to prevent iOS Safari auto-zoom on focus */
+    outline: 'none',
+    fontFamily: 'inherit',
+    letterSpacing: '-0.02em',
+  };
 
-      {/* 헤더(보딩패스 상단 바) */}
-      <div className="flex items-center justify-between border-b border-sky-800 pb-2">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-800/70 border border-sky-600/50 text-[11px] font-semibold">
-            ✈️ ICN → ORDERS
-          </span>
-          <span className="text-[11px] text-sky-300/90">Boarding Pass</span>
-        </div>
-        <button
-          onClick={toggleOrder}
-          className="rounded p-1 text-sky-200 hover:bg-sky-800/50 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
-          aria-label="닫기"
-        >
-          <X size={20} />
-        </button>
+  const rowStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'center',
+    borderBottom: '1px solid var(--border)',
+    padding: '0',
+  };
+
+  /* ─── Main form ─── */
+  return (
+    <div style={{ paddingBottom: '12px', background: 'var(--surface2)' }}>
+
+      {/* Notice */}
+      <div style={{
+        display: 'flex', gap: '10px', alignItems: 'flex-start',
+        padding: '14px 20px',
+        background: '#FFF8ED',
+        borderBottom: '1px solid #FFE0A0',
+        marginBottom: '16px',
+      }}>
+        <span style={{ fontSize: '16px', flexShrink: 0 }}>⚠️</span>
+        <p style={{ margin: 0, fontSize: '13px', color: '#996600', lineHeight: 1.6 }}>
+          주문 완료 후 변경·취소·환불이 <strong>불가</strong>합니다. 테이블 번호와 입금자명을 정확히 입력해주세요.
+        </p>
       </div>
 
-      {/* 본문 영역을 묶어서 sticky CTA와 겹치지 않도록 하단 여백 확보 */}
-      <div className="space-y-4 pb-24">
-        {/* 안내(Notice) */}
-        <div className="rounded-lg border border-amber-300/40 bg-sky-900/40 p-3">
-          <p className="mb-2 font-bold text-amber-300">⚠️ 탑승(주문) 유의사항</p>
-          <ul className="ml-5 list-disc space-y-1 text-sky-100/90">
-            <li>주문 완료 후 변경/취소/환불이 불가합니다.</li>
-            <li>테이블 번호 등 잘못된 입력은 처리 지연의 원인이 됩니다.</li>
-            <li>입금자명과 증빙 명의가 다르면 서빙이 지연될 수 있어요.</li>
-          </ul>
-        </div>
-
-        {/* 장바구니(Cart) */}
-        <div className="rounded-lg border border-sky-700 bg-sky-900/40 p-3">
-          <h4 className="mb-3 border-b border-sky-700/60 pb-1 font-bold text-sky-100">보딩 아이템</h4>
-          {cartItems.map((item) => (
-            <div
-              key={item.id}
-              className="mb-2 flex items-center justify-between rounded border border-sky-700/70 bg-sky-950/40 p-2"
-            >
-              <span className="font-medium text-sky-100">{item.title}</span>
-              <div className="flex items-center gap-2">
-                {item.quantity <= 1 ? (
-                  <button
-                    onClick={() => updateCartItem(item.id, 0)}
-                    className="rounded border border-rose-400/60 bg-rose-200/20 p-1 text-xs text-rose-200 hover:bg-rose-200/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-300/40"
-                    aria-label="삭제"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => updateCartItem(item.id, item.quantity - 1)}
-                    className="rounded border border-sky-600/60 bg-sky-700/30 p-1 text-sky-100 hover:bg-sky-700/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/40"
-                    aria-label="수량 감소"
-                  >
-                    <Minus size={14} />
-                  </button>
-                )}
-                <span className="min-w-[1.5rem] text-center font-bold text-amber-200">{item.quantity}</span>
+      {/* Cart */}
+      <Section title="장바구니">
+        {cartItems.map((item, idx) => (
+          <div key={item.id} style={{
+            display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '14px 18px',
+            borderBottom: idx < cartItems.length - 1 ? '1px solid var(--border)' : 'none',
+          }}>
+            <span style={{ flex: 1, fontSize: '14px', fontWeight: 600, color: 'var(--text)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>
+              {item.title}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button
+                  onClick={() => updateCartItem(item.id, item.quantity - 1)}
+                  style={{
+                    width: '28px', height: '28px', borderRadius: '50%', border: 'none',
+                    background: item.quantity <= 1 ? 'var(--danger-bg)' : 'var(--surface3)',
+                    color: item.quantity <= 1 ? 'var(--danger)' : 'var(--text-muted)',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  {item.quantity <= 1 ? <Trash2 size={13} /> : <Minus size={13} />}
+                </button>
+                <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text)', minWidth: '18px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
+                  {item.quantity}
+                </span>
                 <button
                   onClick={() => updateCartItem(item.id, item.quantity + 1)}
-                  className="rounded border border-sky-600/60 bg-sky-700/30 p-1 text-sky-100 hover:bg-sky-700/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/40"
-                  aria-label="수량 증가"
+                  style={{
+                    width: '28px', height: '28px', borderRadius: '50%', border: 'none',
+                    background: 'var(--primary-light)',
+                    color: 'var(--primary)',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
                 >
-                  <Plus size={14} />
+                  <Plus size={13} />
                 </button>
-                <span className="ml-2 tabular-nums font-bold text-amber-200">
-                  ₩{(item.price * item.quantity).toLocaleString()}
-                </span>
               </div>
-            </div>
-          ))}
-          <div className="mt-3 border-t border-sky-700/60 pt-2 text-base font-bold">
-            <div className="flex justify-between text-amber-200">
-              <span>총 결제 금액</span>
-              <span className="tabular-nums">₩{finalTotal.toLocaleString()}</span>
+              <span style={{ minWidth: '72px', textAlign: 'right', fontSize: '14px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', color: 'var(--text)' }}>
+                {(item.price * item.quantity).toLocaleString()}원
+              </span>
             </div>
           </div>
+        ))}
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 18px' }}>
+          <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>합계</span>
+          <span style={{ fontSize: '18px', fontWeight: 900, color: 'var(--primary)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.04em' }}>
+            {cartTotal.toLocaleString()}원
+          </span>
         </div>
+      </Section>
 
-        {/* Info (탑승자/테이블) */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="text-xs font-bold text-sky-200">탑승자명(입금자)</label>
-            <input
-              name="name"
-              value={userInfo.name}
-              onChange={handleInfoChange}
-              placeholder="입금자 성명"
-              className="w-full rounded border border-sky-700 bg-sky-950/40 px-3 py-2 text-sm text-sky-50 placeholder:text-sky-300/50 focus:border-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/80"
-            />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-sky-200">테이블 번호</label>
-            <input
-              name="phone"
-              value={userInfo.phone}
-              onChange={handleInfoChange}
-              placeholder="1 ~ 64"
-              inputMode="numeric"
-              className="w-full rounded border border-sky-700 bg-sky-950/40 px-3 py-2 text-sm text-sky-50 placeholder:text-sky-300/50 focus:border-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/80"
-            />
-          </div>
+      {/* Info */}
+      <Section title="주문자 정보">
+        <div style={rowStyle}>
+          <span style={{ padding: '0 0 0 18px', fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', flexShrink: 0, width: '90px' }}>입금자 성함</span>
+          <input name="name" value={info.name} onChange={handleChange} placeholder="홍길동" style={inputStyle}
+            onFocus={e => e.target.parentElement!.style.background = 'var(--primary-light)'}
+            onBlur={e => e.target.parentElement!.style.background = 'transparent'}
+          />
         </div>
-
-        {/* People */}
-        <div className="mt-1">
-          <label className="text-xs font-bold text-sky-200">인원</label>
-          <div className="mt-1 flex items-center justify-between rounded border border-sky-700 bg-sky-950/40 px-3 py-2">
-            <button
-              type="button"
-              onClick={() => setTableSize((prev) => Math.max(1, prev - 1))}
-              className="rounded border border-sky-600/60 bg-sky-700/30 p-2 text-sky-100 hover:bg-sky-700/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/40"
-              aria-label="인원 감소"
-            >
+        <div style={rowStyle}>
+          <span style={{ padding: '0 0 0 18px', fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', flexShrink: 0, width: '90px' }}>테이블 번호</span>
+          <input name="phone" value={info.phone} onChange={handleChange} placeholder="예) 12" style={inputStyle}
+            onFocus={e => e.target.parentElement!.style.background = 'var(--primary-light)'}
+            onBlur={e => e.target.parentElement!.style.background = 'transparent'}
+          />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px' }}>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)' }}>인원</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button type="button" onClick={() => setPeople(p => Math.max(1, p - 1))}
+              style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: 'var(--surface3)', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Minus size={14} />
             </button>
-            <span className="tabular-nums text-base font-bold text-amber-200">{tableSize}명</span>
-            <button
-              type="button"
-              onClick={() => setTableSize((prev) => prev + 1)}
-              className="rounded border border-sky-600/60 bg-sky-700/30 p-2 text-sky-100 hover:bg-sky-700/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300/40"
-              aria-label="인원 증가"
-            >
+            <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', minWidth: '32px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>
+              {people}명
+            </span>
+            <button type="button" onClick={() => setPeople(p => p + 1)}
+              style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: 'var(--primary-light)', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Plus size={14} />
             </button>
           </div>
         </div>
+      </Section>
 
-        {/* Consent */}
-        <div className="rounded-lg border border-sky-700 bg-sky-900/40 p-3 text-xs">
-          <p className="mb-1 font-bold text-sky-100">부스 이용 동의</p>
-          <label className="flex items-start gap-2 text-sky-100/90">
-            <input
-              type="checkbox"
-              name="privacyAgree"
-              checked={userInfo.privacyAgree}
-              onChange={handleInfoChange}
-              className="mt-0.5 accent-amber-500"
-            />
-            <span>
-              <span className="cursor-pointer font-bold text-amber-300 underline" onClick={() => setShowPrivacy(true)}>
-                개인정보 처리방침
-              </span>
-              에 동의합니다.
+      {/* Bank */}
+      <Section title="계좌 송금">
+        {[{ label: '은행', value: BANK.bank }, { label: '예금주', value: BANK.name }].map(r => (
+          <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
+            <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 500 }}>{r.label}</span>
+            <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.01em' }}>{r.value}</span>
+          </div>
+        ))}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px' }}>
+          <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 500 }}>계좌번호</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '14px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em', color: 'var(--text)' }}>
+              {BANK.account}
             </span>
-          </label>
-          <label className="mt-2 flex items-start gap-2 text-sky-100/90">
-            <input
-              type="checkbox"
-              name="termsAgree"
-              checked={userInfo.termsAgree}
-              onChange={handleInfoChange}
-              className="mt-0.5 accent-amber-500"
-            />
-            <span>
-              <span className="cursor-pointer font-bold text-amber-300 underline" onClick={() => setShowTerms(true)}>
-                이용약관
-              </span>
-              에 동의합니다.
-            </span>
-          </label>
+            <button onClick={copyAccount} style={{
+              display: 'flex', alignItems: 'center', gap: '4px',
+              padding: '6px 12px', borderRadius: '100px', border: 'none',
+              background: copied ? 'var(--success-bg)' : 'var(--primary-light)',
+              color: copied ? 'var(--success)' : 'var(--primary)',
+              fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              letterSpacing: '-0.01em',
+            }}>
+              {copied ? <Check size={12} /> : <Copy size={12} />}
+              {copied ? '복사됨' : '복사'}
+            </button>
+          </div>
         </div>
+      </Section>
 
-        {/* Bank */}
-        <div className="space-y-3 rounded-xl border-2 border-sky-700 bg-sky-900/40 p-4 shadow-lg">
-          <h4 className="flex items-center border-b border-sky-700/60 pb-2 text-base font-bold text-sky-100">
-            <DollarSign size={16} className="mr-2 text-amber-300" />
-            송금 정보
-          </h4>
-          <div className="space-y-2 text-sky-50">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-bold text-sky-200">은행</span>
-              <span className="font-bold">{bankInfo.bank}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-bold text-sky-200">계좌번호</span>
-              <div className="flex items-center gap-2">
-                <span className="tabular-nums font-bold">{bankInfo.account}</span>
-                <button
-                  onClick={copyAccount}
-                  className="rounded bg-sky-800/60 p-1 text-sky-100 hover:bg-sky-700/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300"
-                  aria-live="polite"
-                  title="계좌번호 복사"
-                >
-                  <Copy size={16} />
-                </button>
-                {copied && <span className="text-xs font-bold text-emerald-300">복사됨!</span>}
+      {/* Image upload */}
+      <div style={{ marginBottom: '8px', padding: '0 16px' }}>
+        <p style={{ margin: '0 0 10px 4px', fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)' }}>송금 증빙</p>
+        <label style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: '8px', padding: '28px 20px',
+          borderRadius: '16px',
+          border: `2px dashed ${image ? 'var(--success)' : 'var(--border)'}`,
+          background: image ? 'var(--success-bg)' : 'var(--surface)',
+          cursor: 'pointer', textAlign: 'center',
+          transition: 'all 0.2s ease',
+        }}>
+          {image ? (
+            <>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--success-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Check size={24} color="var(--success)" strokeWidth={2.5} />
               </div>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-bold text-sky-200">예금주</span>
-              <span className="font-bold">{bankInfo.name}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Upload */}
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-sky-200">송금 증빙 업로드</label>
-          <div
-            className={`rounded-lg border-2 p-4 text-center transition-colors ${
-              paymentImage ? 'border-emerald-500 bg-emerald-900/20' : 'border-sky-700 bg-sky-900/40 hover:bg-sky-900/60'
-            }`}
-          >
-            {paymentImage ? (
-              <>
-                <div className="flex items-center justify-center font-bold text-emerald-300">
-                  <Check size={16} className="mr-2" /> 업로드 완료
-                </div>
-                <p className="mt-1 text-xs text-emerald-200/90">{paymentImage.name}</p>
-                <button
-                  onClick={() => setPaymentImage(null)}
-                  className="mt-2 text-xs font-bold text-amber-300 underline hover:text-amber-200"
-                >
-                  다시 업로드
-                </button>
-              </>
-            ) : (
-              <>
-                <Upload className="mx-auto mb-2 text-amber-300" size={24} />
-                <p className="mb-2 font-serif text-xs font-bold text-sky-100">송금 증빙 이미지를 첨부해주세요</p>
-                <label className="inline-block cursor-pointer rounded-lg border border-amber-300 bg-amber-300 px-4 py-2 text-xs font-bold text-[#0a1220] transition-colors hover:bg-amber-200">
-                  파일 선택
-                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                </label>
-              </>
-            )}
-          </div>
-        </div>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--success)', letterSpacing: '-0.01em' }}>업로드 완료</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{image.name}</span>
+            </>
+          ) : (
+            <>
+              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--surface3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Upload size={22} color="var(--text-dim)" />
+              </div>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '-0.01em' }}>이미지를 탭해서 첨부하세요</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>JPG, PNG 지원</span>
+            </>
+          )}
+          <input type="file" accept="image/*" onChange={handleImage} style={{ display: 'none' }} />
+        </label>
+        {image && (
+          <button onClick={() => setImage(null)} style={{
+            display: 'flex', alignItems: 'center', gap: '4px',
+            marginTop: '8px', background: 'none', border: 'none',
+            color: 'var(--text-dim)', fontSize: '12px', cursor: 'pointer', padding: 0,
+          }}>
+            <X size={12} /> 다시 선택
+          </button>
+        )}
       </div>
 
-      {/* CTA (sticky) */}
-      <div
-        className="sticky bottom-0 left-0 right-0 z-10 border-t border-sky-800 bg-gradient-to-b from-sky-900/70 to-sky-900/80 px-4 pt-3 pb-3 backdrop-blur"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 6px)' }}
-      >
+      {/* Consent */}
+      <Section title="이용 동의">
+        {[
+          { name: 'privacyAgree', checked: info.privacyAgree, label: '개인정보 처리방침', onClick: () => setShowPrivacy(true) },
+          { name: 'termsAgree',   checked: info.termsAgree,   label: '이용약관',          onClick: () => setShowTerms(true) },
+        ].map((cb, idx) => (
+          <label key={cb.name} style={{
+            display: 'flex', alignItems: 'center', gap: '12px',
+            padding: '16px 18px',
+            borderBottom: idx === 0 ? '1px solid var(--border)' : 'none',
+            cursor: 'pointer',
+          }}>
+            <div style={{
+              width: '22px', height: '22px', borderRadius: '6px', flexShrink: 0,
+              border: `2px solid ${cb.checked ? 'var(--primary)' : 'var(--border)'}`,
+              background: cb.checked ? 'var(--primary)' : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s ease',
+            }}>
+              {cb.checked && <Check size={13} color="#fff" strokeWidth={3} />}
+            </div>
+            <input type="checkbox" name={cb.name} checked={cb.checked} onChange={handleChange} style={{ display: 'none' }} />
+            <span style={{ fontSize: '14px', color: 'var(--text-muted)', flex: 1, letterSpacing: '-0.01em' }}>
+              <span
+                onClick={e => { e.preventDefault(); cb.onClick(); }}
+                style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: '3px', cursor: 'pointer' }}
+              >
+                {cb.label}
+              </span>에 동의합니다
+            </span>
+          </label>
+        ))}
+      </Section>
+
+      {/* CTA */}
+      <div style={{
+        position: 'sticky', bottom: 0,
+        background: 'linear-gradient(to bottom, transparent, var(--surface2) 28%)',
+        padding: '16px 16px calc(20px + env(safe-area-inset-bottom, 0px))',
+      }}>
         <button
-          onClick={completeOrder}
-          disabled={!userInfo.name || !userInfo.phone || !userInfo.privacyAgree || !userInfo.termsAgree || !paymentImage}
-          className="w-full rounded-xl border-2 border-amber-300 bg-amber-300 px-4 py-3 text-base font-extrabold text-[#0a1220] shadow transition-transform hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 active:translate-y-[1px]"
-          style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
+          onClick={submit}
+          disabled={!isValid || submitting}
+          style={{
+            position: 'relative', overflow: 'hidden',
+            width: '100%', padding: '17px',
+            borderRadius: '16px', border: 'none',
+            background: isValid ? 'var(--primary)' : 'var(--surface3)',
+            color: isValid ? '#fff' : 'var(--text-dim)',
+            fontSize: '16px', fontWeight: 800,
+            cursor: isValid ? 'pointer' : 'not-allowed',
+            boxShadow: isValid ? '0 4px 20px rgba(49,130,246,0.35)' : 'none',
+            transition: 'all 0.2s ease',
+            letterSpacing: '-0.03em',
+          }}
         >
-          Boarding • 주문하기
+          {isValid && !submitting && (
+            <span className="shimmer-overlay" style={{ animation: 'shimmer 2.4s ease-in-out infinite' }} />
+          )}
+          <span style={{ position: 'relative', zIndex: 1 }}>
+            {submitting ? '처리 중...' : isValid ? `${cartTotal.toLocaleString()}원 주문하기` : '정보를 모두 입력해주세요'}
+          </span>
         </button>
       </div>
 
-      {/* ===== Plane overlay (투명 배경) ===== */}
-      {showPlane && (
-        <div
-          className="fixed inset-0 z-[999] grid place-items-center pointer-events-none"
-          style={{ background: 'transparent' }}
-          aria-hidden="true"
-        >
-          <svg
-            className="plane-anim"
-            width="220"
-            height="120"
-            viewBox="0 0 220 120"
-            style={{ animation: 'plane-fly-in 1.2s ease-out forwards' }}
-          >
-            {/* 점선 항로 (뒤에서 앞으로 그려짐) */}
-            <path
-              className="trail-anim"
-              d="M10,90 C80,70 140,70 210,60"
-              fill="none"
-              stroke="rgba(180,220,255,.5)"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeDasharray="6 10"
-              style={{ animation: 'trail-dots 1.2s ease-out forwards' }}
-            />
-            {/* 비행기 실루엣 */}
-            <g transform="translate(150,50)">
-              <path
-                d="M-40,8 L-5,0 L-40,-8 L-32,-2 L-70,-12 L-72,-8 L-40,-2 L-40,2 L-72,8 L-70,12 L-32,2 Z"
-                fill="white"
-                opacity="0.95"
-                filter="drop-shadow(0 2px 6px rgba(0,0,0,.35))"
-              />
-            </g>
-          </svg>
-        </div>
-      )}
-
-      {/* Modals */}
       <PolicyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} type="privacy" />
-      <PolicyModal isOpen={showTerms} onClose={() => setShowTerms(false)} type="terms" />
+      <PolicyModal isOpen={showTerms}   onClose={() => setShowTerms(false)}   type="terms" />
     </div>
   );
 };
