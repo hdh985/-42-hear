@@ -3,6 +3,7 @@ import OrderManager from './AdminComponents/OrderManager';
 import WaitingManager from './AdminComponents/AdminWaitingManager';
 import MenuManager from './AdminComponents/MenuManager';
 import SeatMap from './AdminComponents/SeatMap';
+import AdminLogin from './AdminComponents/AdminLogin';
 import { Trophy, RefreshCw, User as UserIcon, Award, Download } from 'lucide-react';
 
 interface RevenueRank { [admin: string]: number; }
@@ -38,12 +39,7 @@ export default function Admin() {
 
   useEffect(() => {
     const saved = localStorage.getItem('adminName');
-    if (!saved) {
-      const input = prompt('처리자 이름을 입력해주세요');
-      if (input) { setAdminName(input); localStorage.setItem('adminName', input); }
-    } else {
-      setAdminName(saved);
-    }
+    if (saved) setAdminName(saved);
   }, []);
 
   type OrderItem = { name: string; served_by?: string };
@@ -81,7 +77,7 @@ export default function Admin() {
     return () => clearInterval(id);
   }, [totalRevenue, animatedRevenue]);
 
-  if (!adminName) return null;
+  if (!adminName) return <AdminLogin onLogin={setAdminName} />;
 
   const sortedRanks = Object.entries(revenueRanks).sort((a, b) => b[1] - a[1]);
 
