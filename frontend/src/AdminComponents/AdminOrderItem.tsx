@@ -8,44 +8,50 @@ interface Order {
   items: OrderItem[] | string; total: number; song: string;
   image_path: string; timestamp: string; processed: boolean; table_size: number;
 }
-// elapsed prop 제거 — 컴포넌트 내부에서 직접 계산
 interface Props { order: Order; adminName: string; onRefresh: () => void; }
 
-const getZone = (table: number) => {
-  if (table >= 1  && table <= 50)  return '돌다방'  as const;
-  if (table >= 51 && table <= 100) return '흡연부스' as const;
+const API = process.env.REACT_APP_API_BASE_URL;
+
+function getZone(table: string) {
+  const n = Number(table);
+  if (n >= 1   && n <= 70)  return '돌다방'  as const;
+  if (n >= 101 && n <= 170) return '흡연부스' as const;
   return '기타' as const;
-};
+}
+
+// 흡연부스(101-170)는 화면에 1-70으로 표시
+function displayNum(table: string) {
+  const n = Number(table);
+  if (n >= 101 && n <= 170) return String(n - 100);
+  return table;
+}
 
 export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
-  const zone = useMemo(() => getZone(Number(order.table)), [order.table]);
+  // 낙관적 UI: 서버 응답 전에 즉시 반영
+  const [local, setLocal] = useState(order);
+  useEffect(() => { setLocal(order); }, [order]);
+
+  const zone     = useMemo(() => getZone(local.table), [local.table]);
   const zoneBg    = zone === '돌다방' ? '#EBF3FE' : zone === '흡연부스' ? '#FFF8ED' : '#F2F4F6';
   const zoneColor = zone === '돌다방' ? '#3182F6' : zone === '흡연부스' ? '#FF9500' : '#6B7684';
 
-  // 각 카드가 독립적으로 타이머 관리 → OrderManager 전체 리렌더 없음
   const [seconds, setSeconds] = useState(0);
   useEffect(() => {
-    if (order.processed) { setSeconds(0); return; }
-    const iso = order.timestamp.endsWith('Z') ? order.timestamp : `${order.timestamp}Z`;
+    if (local.processed) { setSeconds(0); return; }
+    const iso   = local.timestamp.endsWith('Z') ? local.timestamp : `${local.timestamp}Z`;
     const start = new Date(iso).getTime();
-    const tick = () => setSeconds(Math.max(0, Math.floor((Date.now() - start) / 1000)));
+    const tick  = () => setSeconds(Math.max(0, Math.floor((Date.now() - start) / 1000)));
     tick();
     const t = setInterval(tick, 1000);
     return () => clearInterval(t);
-  }, [order.processed, order.timestamp]);
+  }, [local.processed, local.timestamp]);
 
   const renderTimer = (sec: number) => {
     const m = Math.floor(sec / 60), s = sec % 60;
-    const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const str   = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     const color = sec >= 900 ? '#F04452' : sec >= 600 ? '#FF9500' : '#00C073';
     return (
-      <span style={{
-        display: 'inline-flex', alignItems: 'center', gap: '4px',
-        fontSize: '12px', fontWeight: 700, color,
-        background: `${color}14`,
-        borderRadius: '100px', padding: '4px 10px',
-        fontVariantNumeric: 'tabular-nums',
-      }}>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 700, color, background: `${color}14`, borderRadius: '100px', padding: '4px 10px', fontVariantNumeric: 'tabular-nums' }}>
         <Timer size={12} /> {str}
       </span>
     );
@@ -53,7 +59,7 @@ export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
 
   let parsedItems: OrderItem[] = [];
   try {
-    parsedItems = typeof order.items === 'string' ? JSON.parse(order.items || '[]') : order.items;
+    parsedItems = typeof local.items === 'string' ? JSON.parse(local.items || '[]') : (local.items as OrderItem[]);
     if (!Array.isArray(parsedItems)) parsedItems = [];
   } catch { parsedItems = []; }
 
@@ -65,43 +71,78 @@ export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
   const [showProof, setShowProof]       = useState(false);
 
   const handleItemToggle = async (idx: number, currentServedBy?: string) => {
+    const wasProcessed = local.processed;
+    const isUndo = !!currentServedBy;
+
+    // 낙관적 업데이트: 즉시 UI 반영
+    const newItems = parsedItems.map((item, i) =>
+      i === idx ? { ...item, served_by: isUndo ? undefined : adminName } : item
+    );
+    setLocal(prev => ({
+      ...prev,
+      items: JSON.stringify(newItems),
+      // 완료된 주문에서 되돌리기 → 대기 상태로 복귀
+      processed: isUndo && wasProcessed ? false : prev.processed,
+    }));
+
     try {
       setLoadingIdx(idx);
       const fd = new FormData();
       fd.append('item_index', String(idx));
-      fd.append('admin', currentServedBy ? '' : adminName);
-      await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/serve-item`, fd);
+      fd.append('admin', isUndo ? '' : adminName);
+      await axios.patch(`${API}/api/orders/${order.id}/serve-item`, fd);
+      // 완료 주문에서 되돌렸으면 order도 대기로 복원
+      if (isUndo && wasProcessed) {
+        await axios.patch(`${API}/api/orders/${order.id}/toggle`);
+      }
       onRefresh();
-    } catch (e) { console.error(e); } finally { setLoadingIdx(null); }
+    } catch (e) {
+      setLocal(order); // 실패 시 원래 상태로 되돌림
+      console.error(e);
+    } finally {
+      setLoadingIdx(null);
+    }
   };
 
   const handleComplete = async () => {
-    try { setIsCompleting(true); await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/complete`); onRefresh(); }
-    catch (e) { console.error(e); } finally { setIsCompleting(false); }
+    setLocal(prev => ({ ...prev, processed: true })); // 낙관적
+    try {
+      setIsCompleting(true);
+      await axios.patch(`${API}/api/orders/${order.id}/complete`);
+      onRefresh();
+    } catch (e) {
+      setLocal(order);
+      console.error(e);
+    } finally {
+      setIsCompleting(false);
+    }
   };
 
   const handleToggle = async () => {
-    try { setIsToggling(true); await axios.patch(`${process.env.REACT_APP_API_BASE_URL}/api/orders/${order.id}/toggle`); onRefresh(); }
-    catch (e) { console.error(e); } finally { setIsToggling(false); }
+    setLocal(prev => ({ ...prev, processed: !prev.processed })); // 낙관적
+    try {
+      setIsToggling(true);
+      await axios.patch(`${API}/api/orders/${order.id}/toggle`);
+      onRefresh();
+    } catch (e) {
+      setLocal(order);
+      console.error(e);
+    } finally {
+      setIsToggling(false);
+    }
   };
 
   return (
     <div style={{
-      background: '#fff',
-      borderRadius: '16px',
-      marginBottom: '12px',
-      boxShadow: order.processed ? '0 1px 4px rgba(0,0,0,0.05)' : '0 2px 12px rgba(0,0,0,0.08)',
-      opacity: order.processed ? 0.75 : 1,
-      overflow: 'hidden',
-      transition: 'box-shadow 0.15s ease',
+      background: '#fff', borderRadius: '16px', marginBottom: '12px',
+      boxShadow: local.processed ? '0 1px 4px rgba(0,0,0,0.05)' : '0 2px 12px rgba(0,0,0,0.08)',
+      opacity: local.processed ? 0.75 : 1,
+      overflow: 'hidden', transition: 'opacity 0.15s ease, box-shadow 0.15s ease',
       border: '1px solid var(--border, #E5E8EB)',
     }}>
-      {/* Card header */}
-      <div style={{
-        display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start',
-        gap: '10px', padding: '14px 16px 12px',
-        borderBottom: '1px solid var(--border, #E5E8EB)',
-      }}>
+
+      {/* 헤더 */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px', padding: '14px 16px 12px', borderBottom: '1px solid var(--border, #E5E8EB)' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '4px' }}>
             <span style={{ fontSize: '11px', fontWeight: 700, color: zoneColor, background: zoneBg, borderRadius: '100px', padding: '3px 10px' }}>
@@ -111,23 +152,23 @@ export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '18px', fontWeight: 900, color: '#191F28', letterSpacing: '-0.04em' }}>
-              테이블 {order.table}
+              테이블 {displayNum(local.table)}
             </span>
             <span style={{ color: '#E5E8EB' }}>·</span>
-            <span style={{ fontSize: '16px', fontWeight: 700, color: '#191F28', letterSpacing: '-0.02em' }}>{order.name}</span>
+            <span style={{ fontSize: '16px', fontWeight: 700, color: '#191F28', letterSpacing: '-0.02em' }}>{local.name}</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '12px', color: '#6B7684' }}>
-              <Users size={12} /> {order.table_size}명
+              <Users size={12} /> {local.table_size}명
             </span>
           </div>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' }}>
-          {!order.processed && renderTimer(seconds)}
+          {!local.processed && renderTimer(seconds)}
           <span style={{
             fontSize: '12px', fontWeight: 700, borderRadius: '100px', padding: '4px 12px',
-            background: order.processed ? '#F2F4F6' : '#E8FBF3',
-            color: order.processed ? '#6B7684' : '#00C073',
+            background: local.processed ? '#F2F4F6' : '#E8FBF3',
+            color: local.processed ? '#6B7684' : '#00C073',
           }}>
-            {order.processed ? '처리됨' : '대기'}
+            {local.processed ? '처리됨' : '대기'}
           </span>
           <button
             onClick={handleToggle}
@@ -135,15 +176,15 @@ export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
             style={{
               fontSize: '12px', fontWeight: 700, padding: '7px 14px', borderRadius: '100px', border: 'none',
               background: '#F2F4F6', color: '#6B7684', cursor: 'pointer',
-              opacity: isToggling ? 0.5 : 1, transition: 'all 0.15s ease',
+              opacity: isToggling ? 0.5 : 1, transition: 'opacity 0.15s ease',
             }}
           >
-            {order.processed ? '↩ 대기로' : '✅ 완료 처리'}
+            {local.processed ? '↩ 대기로' : '✅ 완료 처리'}
           </button>
         </div>
       </div>
 
-      {/* Items */}
+      {/* 메뉴 항목 */}
       <div style={{ padding: '8px 16px' }}>
         {parsedItems.length === 0 && (
           <p style={{ fontSize: '13px', color: '#B0B8C1', padding: '6px 0' }}>메뉴 항목이 없습니다.</p>
@@ -164,34 +205,49 @@ export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
                 </span>
               )}
             </div>
-            {!order.processed && (
+
+            {/* 서빙됨 → 항상 되돌리기 가능 / 미서빙 → 대기 중일 때만 처리 가능 */}
+            {item.served_by ? (
               <button
                 onClick={() => handleItemToggle(idx, item.served_by)}
                 disabled={loadingIdx === idx}
                 style={{
                   fontSize: '12px', fontWeight: 700, padding: '6px 14px', borderRadius: '100px', border: 'none',
-                  background: item.served_by ? '#FFF2F1' : '#EBF3FE',
-                  color: item.served_by ? '#F04452' : '#3182F6',
-                  cursor: 'pointer', opacity: loadingIdx === idx ? 0.5 : 1,
+                  background: '#FFF2F1', color: '#F04452',
+                  cursor: loadingIdx === idx ? 'not-allowed' : 'pointer',
+                  opacity: loadingIdx === idx ? 0.5 : 1,
                   display: 'flex', alignItems: 'center', gap: '4px',
-                  whiteSpace: 'nowrap', transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap', transition: 'opacity 0.15s ease',
                 }}
               >
-                {item.served_by
-                  ? <><Undo2 size={11} /> 되돌리기</>
-                  : <><CheckCircle2 size={11} /> 처리</>}
+                <Undo2 size={11} /> 되돌리기
               </button>
-            )}
+            ) : !local.processed ? (
+              <button
+                onClick={() => handleItemToggle(idx, undefined)}
+                disabled={loadingIdx === idx}
+                style={{
+                  fontSize: '12px', fontWeight: 700, padding: '6px 14px', borderRadius: '100px', border: 'none',
+                  background: '#EBF3FE', color: '#3182F6',
+                  cursor: loadingIdx === idx ? 'not-allowed' : 'pointer',
+                  opacity: loadingIdx === idx ? 0.5 : 1,
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  whiteSpace: 'nowrap', transition: 'opacity 0.15s ease',
+                }}
+              >
+                <CheckCircle2 size={11} /> 처리
+              </button>
+            ) : null}
           </div>
         ))}
       </div>
 
-      {/* Summary strip */}
+      {/* 요약 바 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', padding: '10px 16px', borderTop: '1px solid var(--border, #E5E8EB)', background: 'var(--surface3, #F2F4F6)' }}>
         {[
-          { icon: <Receipt size={12} />,  label: '금액',    value: `${order.total.toLocaleString('ko-KR')}원` },
-          { icon: <Music size={12} />,    label: '요청곡',  value: order.song || '-' },
-          { icon: <Timer size={12} />,    label: '주문시각', value: new Date(order.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) },
+          { icon: <Receipt size={12} />, label: '금액',    value: `${local.total.toLocaleString('ko-KR')}원` },
+          { icon: <Music size={12} />,   label: '요청곡',  value: local.song || '-' },
+          { icon: <Timer size={12} />,   label: '주문시각', value: new Date(local.timestamp).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }) },
         ].map(({ icon, label, value }) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#6B7684', overflow: 'hidden' }}>
             <span style={{ flexShrink: 0 }}>{icon}</span>
@@ -202,19 +258,19 @@ export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
         ))}
       </div>
 
-      {/* Proof image */}
+      {/* 증빙 이미지 */}
       {order.image_path && (
         <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border, #E5E8EB)' }}>
           <button onClick={() => setShowProof(v => !v)} style={{
             display: 'inline-flex', alignItems: 'center', gap: '5px',
             fontSize: '12px', fontWeight: 700, padding: '6px 14px', borderRadius: '100px', border: 'none',
-            background: 'var(--primary-light, #EBF3FE)', color: 'var(--primary, #3182F6)', cursor: 'pointer',
+            background: '#EBF3FE', color: '#3182F6', cursor: 'pointer',
           }}>
             <ImageIcon size={12} /> {showProof ? '증빙 숨기기' : '증빙 보기'}
           </button>
           {showProof && (
             <img
-              src={`${process.env.REACT_APP_API_BASE_URL}/uploads/${order.image_path.replace(/^uploads\//, '')}?v=2`}
+              src={`${API}/uploads/${order.image_path.replace(/^uploads\//, '')}?v=2`}
               crossOrigin="anonymous" alt="증빙"
               style={{ display: 'block', marginTop: '10px', width: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '12px', border: '1px solid var(--border, #E5E8EB)' }}
               onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
@@ -223,8 +279,8 @@ export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
         </div>
       )}
 
-      {/* Complete CTA */}
-      {!order.processed && allServed && (
+      {/* 전체 처리 완료 버튼 */}
+      {!local.processed && allServed && (
         <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border, #E5E8EB)', display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={handleComplete}
@@ -232,9 +288,10 @@ export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
             style={{
               padding: '10px 24px', borderRadius: '100px', border: 'none',
               background: '#3182F6', color: '#fff', fontSize: '14px', fontWeight: 800,
-              cursor: 'pointer', opacity: isCompleting ? 0.6 : 1,
+              cursor: isCompleting ? 'not-allowed' : 'pointer',
+              opacity: isCompleting ? 0.6 : 1,
               boxShadow: '0 4px 16px rgba(49,130,246,0.3)',
-              letterSpacing: '-0.02em',
+              letterSpacing: '-0.02em', transition: 'opacity 0.15s ease',
             }}
           >
             {isCompleting ? '처리 중…' : '✅ 전체 처리 완료'}

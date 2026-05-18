@@ -15,8 +15,8 @@ type Zone = '돌다방' | '흡연부스' | '기타';
 function getZone(t: string): Zone {
   const n = Number(t);
   if (!Number.isFinite(n)) return '기타';
-  if (n >= 1  && n <= 50)  return '돌다방';
-  if (n >= 51 && n <= 100) return '흡연부스';
+  if (n >= 1   && n <= 70)  return '돌다방';
+  if (n >= 101 && n <= 170) return '흡연부스';
   return '기타';
 }
 
