@@ -19,7 +19,7 @@ const OrderBar: React.FC<OrderBarProps> = ({ cartCount, cartTotal, onOpen }) => 
         transform: 'translateX(-50%)',
         width: 'min(calc(100% - 32px), 448px)',
         zIndex: 30,
-        animation: 'slide-up 0.32s cubic-bezier(.34,1.56,.64,1) both',
+        animation: 'slide-up 0.24s cubic-bezier(.34,1.56,.64,1) both',
         willChange: 'transform',
       }}
       role="region"
@@ -30,57 +30,47 @@ const OrderBar: React.FC<OrderBarProps> = ({ cartCount, cartTotal, onOpen }) => 
         onClick={e => e.preventDefault()}
         aria-label="주문하기"
         style={{
-          position: 'relative',
-          overflow: 'hidden',
           width: '100%',
           display: 'flex',
           alignItems: 'center',
-          padding: '15px 20px',
-          borderRadius: '18px',
+          justifyContent: 'space-between',
+          padding: '16px 20px',
+          borderRadius: '16px',
           border: 'none',
-          background: 'var(--primary)',
-          color: '#fff',
+          background: '#3182F6',
+          color: '#FFFFFF',
           cursor: 'pointer',
-          boxShadow: '0 8px 32px rgba(49,130,246,0.4), 0 2px 8px rgba(0,0,0,0.12)',
+          boxShadow: '0 8px 24px rgba(49,130,246,0.35)',
           gap: '12px',
         }}
       >
-        {/* Shimmer */}
-        <span className="shimmer-overlay" style={{ animation: 'shimmer 3s ease-in-out infinite' }} />
-
-        {/* Count badge */}
-        <span style={{
-          flexShrink: 0,
-          width: '26px', height: '26px',
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.2)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '12px', fontWeight: 900,
-          letterSpacing: '-0.02em',
+        {/* 수량 */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '8px',
         }}>
-          {cartCount}
-        </span>
+          <span style={{
+            width: '26px', height: '26px',
+            borderRadius: '100px',
+            background: 'rgba(255,255,255,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '13px', fontWeight: 800,
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {cartCount}
+          </span>
+          <span style={{ fontSize: '15px', fontWeight: 700, letterSpacing: '-0.02em' }}>
+            장바구니 보기
+          </span>
+        </div>
 
-        {/* Label */}
+        {/* 금액 */}
         <span style={{
-          flex: 1, fontSize: '16px', fontWeight: 700,
-          textAlign: 'left', letterSpacing: '-0.03em',
-        }}>
-          지금 주문하기
-        </span>
-
-        {/* Total */}
-        <span style={{
-          fontSize: '16px', fontWeight: 800,
+          fontSize: '15px', fontWeight: 800,
           fontVariantNumeric: 'tabular-nums',
           letterSpacing: '-0.03em',
         }}>
           {cartTotal.toLocaleString()}원
         </span>
-
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, opacity: 0.8 }}>
-          <path d="M9 18l6-6-6-6" />
-        </svg>
       </button>
     </div>,
     document.body

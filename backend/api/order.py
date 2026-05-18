@@ -20,7 +20,7 @@ async def receive_order(
     name: str = Form(...),
     items: str = Form(...),
     total: int = Form(...),
-    song: str = Form(...),
+    song: str = Form(default=''),
     table_size: int = Form(...),
     consent_privacy: bool = Form(...),
     consent_terms: bool = Form(...),

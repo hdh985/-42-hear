@@ -3,67 +3,69 @@
 @tailwind utilities;
 
 :root {
-  /* ─── Toss-style Palette ─── */
+  /* ─── Toss Design System ─── */
   --bg:        #F2F4F6;
   --surface:   #FFFFFF;
-  --surface2:  #F8F9FA;
+  --surface2:  #F9FAFB;
   --surface3:  #F2F4F6;
 
-  --border:    #E5E8EB;
+  --border:        #E5E8EB;
+  --border-subtle: rgba(0,0,0,0.05);
 
   --primary:       #3182F6;
   --primary-dark:  #1B64DA;
   --primary-light: #EBF3FE;
 
-  --accent:       #FF6B35;
-  --accent-hover: #E55A25;
-  --accent-bg:    rgba(255,107,53,0.08);
+  --text:          #191F28;
+  --text-secondary: #6B7684;
+  --text-tertiary: #B0B8C1;
 
   --success:    #00C073;
-  --success-bg: rgba(0,192,115,0.08);
+  --success-bg: #E5FBF2;
   --danger:     #F04452;
-  --danger-bg:  rgba(240,68,82,0.08);
+  --danger-bg:  #FEF0F2;
   --warning:    #FF9500;
-
-  --text:       #191F28;
-  --text-muted: #6B7684;
-  --text-dim:   #B0B8C1;
+  --warning-bg: #FFF8ED;
 
   --radius-sm: 8px;
-  --radius:    16px;
-  --radius-lg: 24px;
+  --radius:    12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
 
   --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
-  --shadow:    0 2px 12px rgba(0,0,0,0.08), 0 0 1px rgba(0,0,0,0.04);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12), 0 0 1px rgba(0,0,0,0.06);
+  --shadow:    0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+  --shadow-blue: 0 8px 24px rgba(49,130,246,0.28);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* html: no height constraint, no overflow — allows natural page scroll */
 html {
-  height: -webkit-fill-available; /* iOS Safari: prevents URL-bar resize jumps */
+  min-height: 100%;
 }
 
 html, body {
-  margin: 0; padding: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Apple SD Gothic Neo', 'Pretendard', 'Malgun Gothic', -apple-system,
-    BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-size: 16px;
-  overflow-x: hidden;
-  overscroll-behavior: none;      /* prevent iOS rubber-band bounce */
-  -webkit-overflow-scrolling: touch;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, 'Apple SD Gothic Neo', 'Pretendard',
+    'Malgun Gothic', BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  /* overflow-x only on body (not html) — avoids iOS scroll-container bug */
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Remove gray tap flash on iOS */
 * { -webkit-tap-highlight-color: transparent; }
 
 /* ─── Animations ─── */
@@ -74,7 +76,7 @@ body {
 }
 
 @keyframes slide-up {
-  from { transform: translateY(24px); opacity: 0; }
+  from { transform: translateY(16px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
 
@@ -88,25 +90,9 @@ body {
   to   { transform: scale(1);    opacity: 1; }
 }
 
-@keyframes pop {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.14); }
-  100% { transform: scale(1); }
-}
-
-@keyframes shimmer {
-  from { transform: translateX(-100%) skewX(-12deg); }
-  to   { transform: translateX(200%)  skewX(-12deg); }
-}
-
-@keyframes pulse-scale {
-  0%, 100% { transform: translateX(-50%) scale(1); }
-  50%       { transform: translateX(-50%) scale(1.02); }
-}
-
 @keyframes badge-pop {
   0%   { transform: scale(0); opacity: 0; }
-  60%  { transform: scale(1.3); }
+  60%  { transform: scale(1.2); }
   100% { transform: scale(1); opacity: 1; }
 }
 
@@ -114,46 +100,32 @@ body {
   to { transform: rotate(360deg); }
 }
 
-@keyframes check-draw {
-  from { stroke-dashoffset: 100; }
-  to   { stroke-dashoffset: 0; }
-}
+/* ─── Utilities ─── */
 
-/* ─── Utility ─── */
+.animate-fade-in        { animation: fade-in 0.18s ease both; }
+.animate-scale-in       { animation: scale-in 0.2s cubic-bezier(.34,1.56,.64,1) both; }
+.animate-slide-up       { animation: slide-up 0.22s cubic-bezier(.34,1.56,.64,1) both; }
+.animate-slide-up-sheet { animation: slide-up-sheet 0.3s cubic-bezier(.32,.72,0,1) both; }
+.animate-badge-pop      { animation: badge-pop 0.25s cubic-bezier(.34,1.56,.64,1) both; }
 
-.animate-fade-in      { animation: fade-in 0.2s ease both; }
-.animate-scale-in     { animation: scale-in 0.22s cubic-bezier(.34,1.56,.64,1) both; }
-.animate-slide-up     { animation: slide-up 0.28s cubic-bezier(.34,1.56,.64,1) both; }
-.animate-slide-up-sheet { animation: slide-up-sheet 0.36s cubic-bezier(.32,.72,0,1) both; }
-.animate-pop          { animation: pop 0.28s cubic-bezier(.34,1.56,.64,1); }
-.animate-badge-pop    { animation: badge-pop 0.3s cubic-bezier(.34,1.56,.64,1) both; }
-
-/* Shimmer overlay */
-.shimmer-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-  pointer-events: none;
-}
-
-/* Touch */
+/* 버튼 터치 최적화 */
 button { touch-action: manipulation; }
 
-/* Subtle press feedback on touch devices */
 @media (hover: none) {
   button:active:not(:disabled) {
-    opacity: 0.72;
+    opacity: 0.75;
     transform: scale(0.97);
   }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar       { width: 0; }
+/* 스크롤바 숨김 */
+::-webkit-scrollbar       { width: 0; height: 0; }
 ::-webkit-scrollbar-thumb { background: transparent; }
 
-/* Inputs */
+/* 체크박스 */
 input[type="checkbox"] { accent-color: var(--primary); }
 
-/* Focus ring */
+/* 포커스 링 */
 *:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;

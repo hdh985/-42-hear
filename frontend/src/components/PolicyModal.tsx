@@ -1,5 +1,5 @@
-// src/components/PolicyModal.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface PolicyModalProps {
   isOpen: boolean;
@@ -8,16 +8,24 @@ interface PolicyModalProps {
 }
 
 const PolicyModal: React.FC<PolicyModalProps> = ({ isOpen, onClose, type }) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const title = type === 'terms' ? '이용약관' : '개인정보처리방침';
-  const content = type === 'terms'
-    ? `🎯 [윤슬] 이용약관 (한국어학과 학생회 부스 웹 주문 서비스)
 
-본 이용약관은 제28대 한국어학과 학생회(윤슬) 부스(이하 '운영자')가 제공하는 주문/결제 서비스(이하 '서비스')의 이용조건 및 절차, 운영자와 이용자의 권리·의무·책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.
-
-제1조 (목적)
-이 약관은 경희대학교 축제 부스 운영자인 [운영자]가 제공하는 온라인 주문 서비스의 이용조건 및 절차, 권리·의무 및 책임사항을 명확히 하여 원활한 거래를 도모함을 목적으로 합니다.
+  const termsContent = `제1조 (목적)
+이 약관은 경희대학교 축제 부스 운영자인 제28대 한국어학과 학생회 윤슬이 제공하는 온라인 주문 서비스의 이용조건 및 절차, 권리·의무 및 책임사항을 명확히 하여 원활한 거래를 도모함을 목적으로 합니다.
 
 제2조 (용어의 정의)
 운영자: 축제 부스를 운영하며 본 서비스를 제공하는 자.
@@ -39,7 +47,6 @@ const PolicyModal: React.FC<PolicyModalProps> = ({ isOpen, onClose, type }) => {
 이용자가 잘못 입력한 정보(테이블 번호, 메뉴 선택, 금액 등)에 대한 책임은 이용자 본인에게 있습니다.
 입금자명과 송금 증빙 이미지의 명의 불일치로 발생하는 혼선은 이용자의 책임입니다.
 서버 오류, 네트워크 장애 등 불가항력적 사유로 인한 서비스 중단 시 운영자는 책임을 지지 않습니다.
-행사장 상황(품절, 안전사고 등)에 따라 주문이 제한될 수 있으며, 이에 대한 사전 공지는 최선을 다해 이루어집니다.
 
 제6조 (환불 및 취소 규정)
 이용자의 단순 변심에 의한 환불은 불가합니다.
@@ -48,55 +55,215 @@ const PolicyModal: React.FC<PolicyModalProps> = ({ isOpen, onClose, type }) => {
 
 제7조 (개인정보 보호)
 이용자가 제공한 개인정보는 축제 부스 운영 및 송금 확인 목적으로만 사용됩니다.
-개인정보는 행사 종료 후 7일이내 파기됩니다.
-개인정보 처리에 대한 자세한 사항은 별도의 [개인정보 수집·이용 동의서]를 따릅니다.
+개인정보는 행사 종료 후 7일 이내에 파기됩니다.
 
 제8조 (지적재산권)
 서비스와 관련된 모든 자료(디자인, 상표, 콘텐츠 등)의 지적재산권은 운영자에게 있으며, 무단 복제, 배포, 도용을 금지합니다.
 
 제9조 (분쟁 해결 및 관할)
 서비스 이용과 관련하여 분쟁이 발생할 경우, 운영자와 이용자는 성실히 협의하여 해결합니다.
-협의가 이루어지지 않을 경우, [운영자 소재지 관할 법원]을 제1심 전속 관할로 합니다.
+협의가 이루어지지 않을 경우, 운영자 소재지 관할 법원을 제1심 전속 관할로 합니다.
 
 부칙
 본 약관은 2025년 10월 28일부터 시행됩니다.
-본 약관에 명시되지 않은 사항은 관련 법령 및 상관례에 따릅니다.`
+본 약관에 명시되지 않은 사항은 관련 법령 및 상관례에 따릅니다.`;
 
-    : `📜 [윤슬] 개인정보처리방침
-
-제1조 (개인정보의 수집 항목)
-서비스 제공을 위해 다음의 개인정보를 수집합니다:
+  const privacyContent = `제1조 (개인정보의 수집 항목)
+서비스 제공을 위해 다음의 개인정보를 수집합니다.
 - 필수 수집 항목: 이름, 전화번호, 테이블 인원수, 송금 증빙 이미지
 
 제2조 (개인정보의 이용 목적)
-수집된 개인정보는 다음의 목적을 위해 사용됩니다:
+수집된 개인정보는 다음의 목적을 위해 사용됩니다.
 - 주문 확인 및 고객 식별
 - 입금 확인 및 송금자 일치 여부 확인
 - 축제 부스 내 서비스 운영 및 사후 대응
 
 제3조 (개인정보의 보유 및 이용 기간)
-- 개인정보는 해당 행사 종료 후 입금자 확인 후 파기됩니다.
-- 이미지 포함 모든 자료는 입금자 확인 후 삭제 처리됩니다.
+개인정보는 해당 행사 종료 후 입금자 확인 후 즉시 파기됩니다.
+이미지 포함 모든 자료는 입금자 확인 후 삭제 처리됩니다.
 
 제4조 (개인정보의 제3자 제공)
-- 외부에 제공하지 않으며 운영자(한국어학과 학생회 윤슬)만 열람 가능합니다.
+외부에 제공하지 않으며 운영자(한국어학과 학생회 윤슬)만 열람 가능합니다.
 
 제5조 (개인정보의 파기 절차 및 방법)
-- 행사 종료 즉시 수집된 정보는 전자적 파일 형태로 안전하게 삭제됩니다.
-- 물리적 보관 자료는 존재하지 않으며 서버에만 일시 보관됩니다.
+행사 종료 즉시 수집된 정보는 전자적 파일 형태로 안전하게 삭제됩니다.
+물리적 보관 자료는 존재하지 않으며 서버에만 일시 보관됩니다.
 
 제6조 (이용자의 권리)
-- 이용자는 본인의 개인정보 수집 및 이용에 동의하지 않을 수 있으며, 이 경우 서비스 이용이 제한됩니다.`;
+이용자는 본인의 개인정보 수집 및 이용에 동의하지 않을 수 있으며, 이 경우 서비스 이용이 제한됩니다.
+본인 요청 시 개인정보 열람, 정정, 삭제가 가능합니다.
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative text-sm">
-        <button className="absolute top-2 right-4 text-gray-500 hover:text-black text-xl" onClick={onClose}>×</button>
-        <h2 className="text-lg font-bold mb-3">{title}</h2>
-        <div className="whitespace-pre-wrap text-gray-800 text-xs overflow-y-auto max-h-[60vh]">{content}</div>
-        <button className="mt-4 w-full bg-blue-600 text-white py-2 rounded" onClick={onClose}>확인</button>
+문의처
+한국어학과 학생회 윤슬 운영팀
+전화: 010-8921-9358
+
+부칙
+본 방침은 2025년 10월 28일부터 시행됩니다.`;
+
+  const content = type === 'terms' ? termsContent : privacyContent;
+
+  return createPortal(
+    <>
+      {/* Backdrop */}
+      <div
+        aria-hidden
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(42,26,16,0.72)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          animation: 'fade-in 0.2s ease both',
+        }}
+      />
+
+      {/* Modal */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        onClick={e => e.stopPropagation()}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 210,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px',
+          pointerEvents: 'none',
+        }}
+      >
+        <div
+          style={{
+            pointerEvents: 'auto',
+            width: '100%',
+            maxWidth: '480px',
+            maxHeight: '88dvh',
+            display: 'flex',
+            flexDirection: 'column',
+            borderRadius: '20px',
+            background: 'var(--surface)',
+            border: '1px solid rgba(201,160,80,0.4)',
+            boxShadow: '0 24px 80px rgba(42,26,16,0.5), 0 0 0 1px rgba(201,160,80,0.1)',
+            overflow: 'hidden',
+            animation: 'slide-up-sheet 0.32s cubic-bezier(.32,.72,0,1) both',
+            position: 'relative',
+          }}
+        >
+          {/* 상단 골드 장식선 */}
+          <div style={{
+            position: 'absolute',
+            top: 0, left: '15%', right: '15%',
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent, var(--gold), #F5E8C8, var(--gold), transparent)',
+            zIndex: 1,
+          }} />
+
+          {/* Header */}
+          <div style={{
+            flexShrink: 0,
+            padding: '22px 20px 16px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+          }}>
+            <div>
+              <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'var(--gold)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                ✦ 약관 안내
+              </p>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.02em' }}>
+                {title}
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              aria-label="닫기"
+              style={{
+                width: '32px', height: '32px',
+                borderRadius: '50%',
+                border: '1px solid var(--border)',
+                background: 'var(--surface3)',
+                color: 'var(--text-muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '15px',
+                flexShrink: 0,
+              }}
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div style={{
+            height: '1px',
+            background: 'linear-gradient(90deg, transparent, var(--border), transparent)',
+            flexShrink: 0,
+          }} />
+
+          {/* Content */}
+          <div style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px 20px 24px',
+            overscrollBehavior: 'contain',
+          } as React.CSSProperties}>
+            <p style={{
+              margin: '0 0 16px',
+              padding: '10px 14px',
+              background: 'var(--gold-light)',
+              border: '1px solid var(--border)',
+              borderRadius: '10px',
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+              lineHeight: 1.6,
+            }}>
+              {type === 'terms'
+                ? '제28대 한국어학과 학생회 윤슬이 제공하는 주문 서비스 이용약관입니다.'
+                : '수집된 개인정보는 행사 운영 목적으로만 사용되며 행사 종료 후 즉시 파기됩니다.'}
+            </p>
+            <pre style={{
+              margin: 0,
+              fontFamily: 'inherit',
+              fontSize: '12px',
+              lineHeight: 1.85,
+              color: 'var(--text)',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'keep-all',
+            }}>
+              {content}
+            </pre>
+          </div>
+
+          {/* Footer button */}
+          <div style={{
+            flexShrink: 0,
+            padding: '12px 20px calc(12px + env(safe-area-inset-bottom, 0px))',
+            borderTop: '1px solid var(--border-subtle)',
+          }}>
+            <button
+              onClick={onClose}
+              style={{
+                width: '100%',
+                padding: '13px',
+                borderRadius: '12px',
+                border: '1px solid rgba(201,160,80,0.3)',
+                background: 'linear-gradient(135deg, #4A1A52 0%, #5C2D7A 40%, #8B4A6B 100%)',
+                color: '#F5E8C8',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                letterSpacing: '0.04em',
+              }}
+            >
+              ✦ 확인했습니다
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </>,
+    document.body
   );
 };
 

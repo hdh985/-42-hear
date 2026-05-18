@@ -3,10 +3,12 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 
 export interface MenuItemType {
   id: string;
-  category: 'snack' | 'beverage';
+  category: 'main' | 'side' | 'set' | 'drink';
   title: string;
   description: string;
   price: number;
+  emoji?: string;
+  thumbBg?: string;
   change: string;
   trend: 'up' | 'down';
   marketCap: string;
@@ -24,184 +26,183 @@ interface MenuItemProps {
 }
 
 const THUMB: Record<string, { bg: string; emoji: string }> = {
-  '🇰🇷': { bg: 'linear-gradient(135deg, #C62828, #E53935)', emoji: '🇰🇷' },
-  '🇨🇳': { bg: 'linear-gradient(135deg, #E53935, #FB8C00)', emoji: '🇨🇳' },
-  '🇯🇵': { bg: 'linear-gradient(135deg, #AD1457, #E91E63)', emoji: '🇯🇵' },
-  '🇺🇸': { bg: 'linear-gradient(135deg, #1565C0, #1E88E5)', emoji: '🇺🇸' },
-  '🇪🇸': { bg: 'linear-gradient(135deg, #B71C1C, #EF6C00)', emoji: '🇪🇸' },
-  '🇷🇺': { bg: 'linear-gradient(135deg, #283593, #5C6BC0)', emoji: '🇷🇺' },
-  '🇫🇷': { bg: 'linear-gradient(135deg, #1A237E, #B71C1C)', emoji: '🇫🇷' },
+  '🇰🇷': { bg: '#FEF0F2', emoji: '🇰🇷' },
+  '🇨🇳': { bg: '#FEF0F2', emoji: '🇨🇳' },
+  '🇯🇵': { bg: '#EBF3FE', emoji: '🇯🇵' },
+  '🇺🇸': { bg: '#EBF3FE', emoji: '🇺🇸' },
+  '🇪🇸': { bg: '#FFF8ED', emoji: '🇪🇸' },
+  '🇷🇺': { bg: '#E5FBF2', emoji: '🇷🇺' },
+  '🇫🇷': { bg: '#F0F0FE', emoji: '🇫🇷' },
 };
-const DEFAULT_THUMB = { bg: 'linear-gradient(135deg, #1B5E20, #43A047)', emoji: '🥤' };
+const DEFAULT_THUMB = { bg: '#F2F4F6', emoji: '🥤' };
 
-function getThumb(title: string) {
-  const key = Object.keys(THUMB).find(f => title.includes(f));
+function getThumb(item: { title: string; emoji?: string; thumbBg?: string }) {
+  if (item.emoji) return { bg: item.thumbBg ?? DEFAULT_THUMB.bg, emoji: item.emoji };
+  const key = Object.keys(THUMB).find(f => item.title.includes(f));
   return key ? THUMB[key] : DEFAULT_THUMB;
 }
 
 const BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  '즉시 체포': { label: '🔥 인기', color: '#FF3B30', bg: '#FFF2F1' },
-  '체포 권장': { label: '👍 추천', color: '#00C073', bg: '#F0FBF6' },
-  '감시 중':   { label: '✨ 추천', color: 'var(--primary)', bg: 'var(--primary-light)' },
-  '수배 중':   { label: '🆕 NEW',  color: '#FF9500', bg: '#FFF8ED' },
+  '즉시 체포': { label: '인기',  color: '#F04452', bg: '#FEF0F2' },
+  '체포 권장': { label: '추천',  color: '#3182F6', bg: '#EBF3FE' },
+  '감시 중':   { label: '추천',  color: '#3182F6', bg: '#EBF3FE' },
+  '수배 중':   { label: 'NEW',   color: '#FF9500', bg: '#FFF8ED' },
 };
 
 const MenuItem: React.FC<MenuItemProps> = ({ item, addToCart, cartQuantity, updateCartItem }) => {
   const [justAdded, setJustAdded] = useState(false);
-  const { bg, emoji } = getThumb(item.title);
+  const { bg, emoji } = getThumb(item);
   const badge = BADGE[item.investment];
 
   const handleAdd = () => {
     if (item.isSoldOut) return;
     setJustAdded(true);
     addToCart(item);
-    setTimeout(() => setJustAdded(false), 800);
+    setTimeout(() => setJustAdded(false), 600);
   };
 
   return (
-    <div
+    <article
       style={{
+        background: '#FFFFFF',
+        borderRadius: '16px',
+        padding: '18px 18px 16px',
+        marginBottom: '10px',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+        opacity: item.isSoldOut ? 0.5 : 1,
         display: 'flex',
-        alignItems: 'center',
         gap: '14px',
-        padding: '16px',
-        marginBottom: '8px',
-        background: 'var(--surface)',
-        borderRadius: 'var(--radius)',
-        boxShadow: 'var(--shadow-sm)',
-        opacity: item.isSoldOut ? 0.45 : 1,
-        transition: 'transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s ease',
-        cursor: item.isSoldOut ? 'default' : 'pointer',
-      }}
-      onMouseEnter={e => {
-        if (!item.isSoldOut && window.matchMedia('(hover: hover)').matches) {
-          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-          (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow)';
-        }
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLDivElement).style.transform = '';
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '';
+        alignItems: 'flex-start',
       }}
     >
-      {/* Thumbnail */}
-      <div style={{
-        width: '72px', height: '72px',
-        borderRadius: '14px',
-        background: bg,
-        flexShrink: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '32px',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        {emoji}
-        {item.isSoldOut && (
-          <div style={{
-            position: 'absolute', inset: 0, borderRadius: '14px',
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '9px', fontWeight: 800, color: '#fff',
-            letterSpacing: '0.06em',
-          }}>
-            SOLD<br />OUT
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Name + badge */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '3px' }}>
-          <h3 style={{
-            margin: 0, flex: 1, minWidth: 0,
-            fontSize: '14px', fontWeight: 700, color: 'var(--text)',
-            lineHeight: 1.4,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            letterSpacing: '-0.02em',
-          }}>
-            {item.title}
-          </h3>
-          {badge && !item.isSoldOut && (
-            <span style={{
-              flexShrink: 0,
-              fontSize: '11px', fontWeight: 700,
-              color: badge.color, background: badge.bg,
-              borderRadius: '6px', padding: '2px 7px',
-              marginTop: '1px',
-              whiteSpace: 'nowrap',
+      {/* 우: 이미지 (Toss는 이미지를 오른쪽에) */}
+      <div style={{ flexShrink: 0, position: 'relative' }}>
+        <div style={{
+          width: '72px', height: '72px',
+          borderRadius: '12px',
+          background: item.isSoldOut ? '#F2F4F6' : bg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '30px',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {emoji}
+          {item.isSoldOut && (
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: '12px',
+              background: 'rgba(242,244,246,0.85)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '10px', fontWeight: 700, color: '#B0B8C1',
+              letterSpacing: '0.04em',
             }}>
-              {badge.label}
-            </span>
+              품절
+            </div>
           )}
         </div>
+      </div>
 
-        {item.description ? (
+      {/* 좌: 정보 */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* 배지 */}
+        {badge && !item.isSoldOut && (
+          <span style={{
+            display: 'inline-block',
+            fontSize: '11px', fontWeight: 700,
+            color: badge.color,
+            background: badge.bg,
+            borderRadius: '4px',
+            padding: '2px 6px',
+            marginBottom: '5px',
+            letterSpacing: '-0.01em',
+          }}>
+            {badge.label}
+          </span>
+        )}
+
+        {/* 제목 */}
+        <h3 style={{
+          margin: '0 0 4px',
+          fontSize: '15px', fontWeight: 700,
+          color: '#191F28',
+          lineHeight: 1.4,
+          letterSpacing: '-0.02em',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        }}>
+          {item.title}
+        </h3>
+
+        {/* 설명 */}
+        {item.description && (
           <p style={{
-            margin: '0 0 10px', fontSize: '12px',
-            color: 'var(--text-muted)', lineHeight: 1.4,
+            margin: '0 0 10px',
+            fontSize: '13px',
+            color: '#B0B8C1',
+            lineHeight: 1.4,
+            letterSpacing: '-0.01em',
             overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
           }}>
             {item.description}
           </p>
-        ) : (
-          <div style={{ height: '10px' }} />
         )}
 
-        {/* Price + action */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* 가격 + 버튼 */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginTop: item.description ? 0 : '10px',
+        }}>
           <span style={{
-            fontSize: '17px', fontWeight: 800, color: 'var(--text)',
-            letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums',
+            fontSize: '17px', fontWeight: 800,
+            color: '#191F28',
+            letterSpacing: '-0.03em',
+            fontVariantNumeric: 'tabular-nums',
           }}>
-            {item.price.toLocaleString()}원
+            {item.price.toLocaleString()}
+            <span style={{ fontSize: '13px', fontWeight: 600, color: '#6B7684', marginLeft: '1px' }}>원</span>
           </span>
 
+          {/* 버튼 영역 */}
           {item.isSoldOut ? (
             <span style={{
-              fontSize: '12px', fontWeight: 600,
-              color: 'var(--text-dim)',
-              background: 'var(--surface3)',
-              borderRadius: '100px', padding: '5px 12px',
+              fontSize: '13px', fontWeight: 600,
+              color: '#B0B8C1',
+              background: '#F2F4F6',
+              borderRadius: '100px', padding: '7px 14px',
             }}>품절</span>
 
           ) : cartQuantity > 0 ? (
-            /* Stepper */
             <div style={{
               display: 'flex', alignItems: 'center',
-              background: 'var(--primary-light)',
+              background: '#F2F4F6',
               borderRadius: '100px',
-              overflow: 'hidden',
+              padding: '4px',
               gap: '2px',
-              padding: '2px',
             }}>
               <button
                 onClick={() => updateCartItem(item.id, cartQuantity - 1)}
                 style={{
                   width: '32px', height: '32px',
-                  borderRadius: '100px',
-                  border: 'none',
-                  background: cartQuantity === 1 ? '#FFE9E9' : 'var(--surface)',
-                  color: cartQuantity === 1 ? 'var(--danger)' : 'var(--text)',
+                  borderRadius: '100px', border: 'none',
+                  background: cartQuantity === 1 ? '#FEF0F2' : '#FFFFFF',
+                  color: cartQuantity === 1 ? '#F04452' : '#6B7684',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                  flexShrink: 0,
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                  transition: 'all 0.12s ease',
                 }}
               >
-                {cartQuantity === 1 ? <Trash2 size={13} strokeWidth={2.5} /> : <Minus size={13} strokeWidth={2.5} />}
+                {cartQuantity === 1
+                  ? <Trash2 size={13} strokeWidth={2} />
+                  : <Minus size={13} strokeWidth={2} />}
               </button>
               <span style={{
                 minWidth: '28px', textAlign: 'center',
-                fontSize: '14px', fontWeight: 800,
-                color: 'var(--primary)',
+                fontSize: '15px', fontWeight: 800,
+                color: '#191F28',
                 fontVariantNumeric: 'tabular-nums',
-                letterSpacing: '-0.02em',
               }}>
                 {cartQuantity}
               </span>
@@ -209,49 +210,48 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, addToCart, cartQuantity, upda
                 onClick={handleAdd}
                 style={{
                   width: '32px', height: '32px',
-                  borderRadius: '100px',
-                  border: 'none',
-                  background: 'var(--primary)',
-                  color: '#fff',
+                  borderRadius: '100px', border: 'none',
+                  background: '#3182F6',
+                  color: '#FFFFFF',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer',
-                  flexShrink: 0,
+                  transition: 'all 0.12s ease',
                 }}
               >
-                <Plus size={13} strokeWidth={2.5} />
+                <Plus size={13} strokeWidth={2} />
               </button>
             </div>
 
           ) : (
-            /* Add button */
             <button
               onClick={handleAdd}
               style={{
-                position: 'relative',
-                overflow: 'hidden',
                 display: 'flex', alignItems: 'center', gap: '4px',
                 padding: '8px 16px',
+                background: justAdded ? '#00C073' : '#3182F6',
+                color: '#FFFFFF',
                 borderRadius: '100px',
                 border: 'none',
-                background: justAdded ? 'var(--success)' : 'var(--primary)',
-                color: '#fff',
                 fontSize: '13px', fontWeight: 700,
                 cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(.34,1.56,.64,1)',
-                transform: justAdded ? 'scale(0.96)' : 'scale(1)',
                 letterSpacing: '-0.01em',
+                transition: 'all 0.15s ease',
+                transform: justAdded ? 'scale(0.96)' : 'scale(1)',
               }}
             >
-              {!justAdded && (
-                <span className="shimmer-overlay" style={{ animation: 'shimmer 2.4s ease-in-out infinite' }} />
+              {justAdded ? (
+                '✓ 담김'
+              ) : (
+                <>
+                  <Plus size={12} strokeWidth={2.5} />
+                  담기
+                </>
               )}
-              <Plus size={13} strokeWidth={2.5} />
-              {justAdded ? '추가됨' : '담기'}
             </button>
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

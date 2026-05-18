@@ -9,7 +9,7 @@ import { CartItem } from './components/OrderForm';
 import './Styles/index.css';
 
 const App: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState<'snack' | 'beverage'>('snack');
+  const [activeCategory, setActiveCategory] = useState<'main' | 'side' | 'set' | 'drink'>('main');
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [orderOpen, setOrderOpen] = useState(false);
   const [menuItems, setMenuItems] = useState<MenuItemType[]>([]);
@@ -50,46 +50,49 @@ const App: React.FC = () => {
 
   useEffect(() => {
     setMenuItems([
-      { id: 'snack-001', category: 'snack', title: "🇰🇷 '두부김치'의 유혹", description: '빠져나올 수 없는 두부김치의 유혹', price: 16000, change: '+15.2%', trend: 'up', marketCap: '$50M', volume: '높음', volatility: '높음', investment: '즉시 체포', isSoldOut: false },
-      { id: 'snack-002', category: 'snack', title: "🇨🇳 火려한 불맛 '고추잡채'", description: '매콤한 불맛 고추잡채', price: 20000, change: '+12.8%', trend: 'up', marketCap: '$45M', volume: '높음', volatility: '중간', investment: '체포 권장', isSoldOut: false },
-      { id: 'snack-003', category: 'snack', title: "🇯🇵 일본으로 '가라아게'", description: '바삭바삭 일본식 가라아게', price: 18000, change: '-3.5%', trend: 'down', marketCap: '$35M', volume: '중간', volatility: '낮음', investment: '감시 중', isSoldOut: false },
-      { id: 'beverage-001', category: 'beverage', title: "🇺🇸 '맥엔치즈' 플리즈", description: '맥엔치즈 주세요', price: 10000, change: '+5.2%', trend: 'up', marketCap: '$20M', volume: '중간', volatility: '낮음', investment: '체포 권장', isSoldOut: false },
-      { id: 'beverage-002', category: 'beverage', title: "🇪🇸 마드리드 'KHU러스'", description: '스페인 본토의 맛 츄러스', price: 7000, change: '+7.1%', trend: 'up', marketCap: '$25M', volume: '높음', volatility: '높음', investment: '즉시 체포', isSoldOut: false },
-      { id: 'beverage-003', category: 'beverage', title: "🇷🇺 외대의 소리.. '연어 볼리니'", description: '크레페에 크림치즈와 연어를 곁들인 러시아식 핑거푸드', price: 10000, change: '+3.8%', trend: 'up', marketCap: '$15M', volume: '낮음', volatility: '낮음', investment: '감시 중', isSoldOut: false },
-      { id: 'beverage-004', category: 'beverage', title: "🇫🇷 '에스까르고 바게트'(feat.골뱅이)", description: '바게트 위에 골뱅이를 얹은 프랑스식 바게트', price: 8000, change: '-1.2%', trend: 'down', marketCap: '$18M', volume: '낮음', volatility: '중간', investment: '수배 중', isSoldOut: false },
-      { id: 'beverage-005', category: 'beverage', title: '제로콜라', description: '', price: 3000, change: '', trend: 'down', marketCap: '', volume: '', volatility: '', investment: '', isSoldOut: false },
-      { id: 'beverage-007', category: 'beverage', title: '사이다', description: '', price: 3000, change: '', trend: 'down', marketCap: '', volume: '', volatility: '', investment: '', isSoldOut: false },
-      { id: 'beverage-008', category: 'beverage', title: '물', description: '', price: 2000, change: '', trend: 'down', marketCap: '', volume: '', volatility: '', investment: '', isSoldOut: false },
+      // 메인
+      { id: 'main-001', category: 'main', emoji: '🍱', thumbBg: '#FFF3E0', title: '보릿고개도 견디게 한 든든 옛날 도시락', description: '옛날도시락', price: 20000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '즉시 체포', isSoldOut: false },
+      { id: 'main-002', category: 'main', emoji: '🍜', thumbBg: '#FFEBEE', title: '시장통 끝에서 호호 불던 김치우동', description: '김치우동', price: 18000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '체포 권장', isSoldOut: false },
+      { id: 'main-003', category: 'main', emoji: '🍗', thumbBg: '#FFF8E1', title: '잔칫날에나 올라오던 양념닭강정', description: '양념닭강정', price: 18000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '체포 권장', isSoldOut: false },
+      // 사이드
+      { id: 'side-001', category: 'side', emoji: '🍿', thumbBg: '#FFFDE7', title: '구멍가게 앞 한 봉지 라면땅', description: '라면땅', price: 7000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '', isSoldOut: false },
+      { id: 'side-002', category: 'side', emoji: '🍑', thumbBg: '#FFF9C4', title: '찬물에 담가두고 먹던 황도 통조림', description: '황도', price: 7000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '', isSoldOut: false },
+      { id: 'side-003', category: 'side', emoji: '🍥', thumbBg: '#F3E5F5', title: '사촌당숙 졸라 얻은 용돈으로 산 라면', description: '컵라면', price: 5000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '', isSoldOut: false },
+      { id: 'side-004', category: 'side', emoji: '🦑', thumbBg: '#E0F7FA', title: '우리 아부지 막걸리상 단골 버터오징어', description: '버터오징어', price: 10000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '감시 중', isSoldOut: false },
+      // 세트
+      { id: 'set-001', category: 'set', emoji: '🍽️', thumbBg: '#FCE4EC', title: '어머니 손맛 저녁상 한 끼', description: '옛날도시락 + 컵라면', price: 23000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '즉시 체포', isSoldOut: false },
+      { id: 'set-002', category: 'set', emoji: '🥢', thumbBg: '#E8EAF6', title: '시장 포장마차 단골상', description: '김치우동 + 버터오징어', price: 25000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '수배 중', isSoldOut: false },
+      // 음료
+      { id: 'drink-001', category: 'drink', emoji: '💧', thumbBg: '#E3F2FD', title: '물', description: '', price: 2000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '', isSoldOut: false },
+      { id: 'drink-002', category: 'drink', emoji: '🍫', thumbBg: '#EFEBE9', title: '초코에몽', description: '', price: 3000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '', isSoldOut: false },
+      { id: 'drink-003', category: 'drink', emoji: '🥤', thumbBg: '#F1F8E9', title: '콜라 / 사이다', description: '', price: 3000, change: '', trend: 'up', marketCap: '', volume: '', volatility: '', investment: '', isSoldOut: false },
     ]);
   }, []);
 
-  const filtered = menuItems.filter(i => i.id.startsWith(activeCategory));
+  const filtered = menuItems.filter(i => i.category === activeCategory);
 
   return (
-    <div style={{ background: 'var(--bg)', minHeight: 'var(--app-height, 100dvh)', maxWidth: '480px', margin: '0 auto', position: 'relative' }}>
+    <div style={{ background: '#F2F4F6', minHeight: '100dvh', maxWidth: '480px', margin: '0 auto', position: 'relative' }}>
       <Header cartCount={cartCount} cartTotal={cartTotal} toggleOrder={toggleOrder} />
 
-      {/* Sticky tabs */}
+      {/* 카테고리 탭 (sticky) */}
       <div
         ref={tabsRef}
         style={{
           position: 'sticky',
           top: '56px',
           zIndex: 20,
-          background: 'rgba(242,244,246,0.95)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          transform: 'translateZ(0)',   /* GPU compositing — prevents jitter */
+          transform: 'translateZ(0)',
           willChange: 'transform',
         }}
       >
         <MenuTab activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
       </div>
 
-      {/* Menu list */}
-      <main style={{ padding: '4px 16px calc(100px + env(safe-area-inset-bottom, 0px))' }}>
+      {/* 메뉴 목록 */}
+      <main style={{ padding: '16px 16px calc(100px + env(safe-area-inset-bottom, 0px))' }}>
         {filtered.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '56px 24px', color: 'var(--text-dim)', fontSize: '14px' }}>
+          <div style={{ textAlign: 'center', padding: '56px 24px', color: '#B0B8C1', fontSize: '14px' }}>
             준비 중이에요
           </div>
         )}

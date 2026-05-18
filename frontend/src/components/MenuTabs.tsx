@@ -1,19 +1,28 @@
 import React from 'react';
 
-export type CategoryId = 'snack' | 'beverage';
+export type CategoryId = 'main' | 'side' | 'set' | 'drink';
 
 interface MenuTabProps {
   activeCategory: CategoryId;
   setActiveCategory: React.Dispatch<React.SetStateAction<CategoryId>>;
 }
 
-const TABS: { id: CategoryId; label: string; emoji: string; count: string }[] = [
-  { id: 'snack',    label: '메인 메뉴',   emoji: '🍱', count: '3' },
-  { id: 'beverage', label: '사이드 메뉴', emoji: '🥗', count: '7' },
+const TABS: { id: CategoryId; label: string; count: number }[] = [
+  { id: 'main',  label: '메인',  count: 3 },
+  { id: 'side',  label: '사이드', count: 4 },
+  { id: 'set',   label: '세트',  count: 2 },
+  { id: 'drink', label: '음료',  count: 3 },
 ];
 
 const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) => (
-  <div style={{ padding: '12px 20px', display: 'flex', gap: '8px' }}>
+  <nav
+    style={{
+      display: 'flex',
+      background: '#FFFFFF',
+      borderBottom: '1px solid #E5E8EB',
+      padding: '0 4px',
+    }}
+  >
     {TABS.map(tab => {
       const isActive = activeCategory === tab.id;
       return (
@@ -26,34 +35,36 @@ const MenuTab: React.FC<MenuTabProps> = ({ activeCategory, setActiveCategory }) 
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '7px',
-            padding: '11px 0',
-            borderRadius: '12px',
+            gap: '6px',
+            padding: '14px 8px 13px',
             border: 'none',
-            background: isActive ? 'var(--primary)' : 'var(--surface)',
-            color: isActive ? '#fff' : 'var(--text-muted)',
+            borderBottom: isActive ? '2px solid #3182F6' : '2px solid transparent',
+            marginBottom: '-1px',
+            background: 'transparent',
+            color: isActive ? '#3182F6' : '#B0B8C1',
             fontSize: '14px',
             fontWeight: isActive ? 700 : 500,
             cursor: 'pointer',
-            transition: 'all 0.2s cubic-bezier(.34,1.56,.64,1)',
-            boxShadow: isActive ? '0 4px 16px rgba(49,130,246,0.3)' : 'var(--shadow-sm)',
             letterSpacing: '-0.02em',
+            transition: 'all 0.15s ease',
           }}
         >
-          <span style={{ fontSize: '17px', lineHeight: 1 }}>{tab.emoji}</span>
           <span>{tab.label}</span>
           <span style={{
-            fontSize: '11px',
-            fontWeight: 600,
-            opacity: 0.7,
-            background: isActive ? 'rgba(255,255,255,0.2)' : 'var(--surface3)',
+            fontSize: '12px',
+            fontWeight: 700,
+            color: isActive ? '#3182F6' : '#B0B8C1',
+            background: isActive ? '#EBF3FE' : '#F2F4F6',
             borderRadius: '100px',
             padding: '1px 7px',
-          }}>{tab.count}</span>
+            transition: 'all 0.15s ease',
+          }}>
+            {tab.count}
+          </span>
         </button>
       );
     })}
-  </div>
+  </nav>
 );
 
 export default MenuTab;

@@ -38,17 +38,27 @@ function resizeImage(file: File, maxSide = 800, q = 0.9): Promise<File> {
   });
 }
 
-const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+/* 섹션 카드 */
+const Card: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div style={{ marginBottom: '8px' }}>
     <p style={{
-      margin: '0 0 10px', padding: '0 20px',
+      margin: '0 0 8px 4px',
       fontSize: '13px', fontWeight: 700,
-      color: 'var(--text-muted)', letterSpacing: '-0.01em',
-    }}>{title}</p>
-    <div style={{ background: 'var(--surface)', borderRadius: '16px', overflow: 'hidden', margin: '0 16px' }}>
+      color: '#6B7684', letterSpacing: '-0.01em',
+    }}>{label}</p>
+    <div style={{
+      background: '#FFFFFF',
+      borderRadius: '12px',
+      overflow: 'hidden',
+    }}>
       {children}
     </div>
   </div>
+);
+
+/* 구분선 */
+const Divider = () => (
+  <div style={{ height: '1px', background: '#F2F4F6', margin: '0 16px' }} />
 );
 
 const OrderForm: React.FC<OrderFormProps> = ({
@@ -75,10 +85,23 @@ const OrderForm: React.FC<OrderFormProps> = ({
   };
 
   const copyAccount = () => {
-    navigator.clipboard.writeText(BANK.account).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    });
+    const text = BANK.account;
+    const markCopied = () => { setCopied(true); setTimeout(() => setCopied(false), 1800); };
+    const fallback = () => {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      try { if (document.execCommand('copy')) markCopied(); } catch {}
+      document.body.removeChild(el);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(markCopied).catch(fallback);
+    } else {
+      fallback();
+    }
   };
 
   const submit = async () => {
@@ -113,244 +136,267 @@ const OrderForm: React.FC<OrderFormProps> = ({
 
   const isValid = !!(info.name && info.phone && info.privacyAgree && info.termsAgree && image);
 
-  /* ─── Complete screen ─── */
+  /* ─── 완료 화면 ─── */
   if (done) {
     return (
-      <div style={{ padding: '40px 24px', textAlign: 'center' }}>
+      <div style={{ padding: '40px 24px', textAlign: 'center', background: '#F2F4F6' }}>
+        {/* 완료 아이콘 */}
         <div className="animate-scale-in" style={{
           width: '80px', height: '80px', margin: '0 auto 20px',
           borderRadius: '50%',
-          background: 'var(--success-bg)',
+          background: '#00C073',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Check size={36} color="var(--success)" strokeWidth={2.5} />
+          <Check size={36} color="#FFFFFF" strokeWidth={2.5} />
         </div>
-        <h2 style={{ margin: '0 0 6px', fontSize: '24px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.04em' }}>
+
+        <h2 style={{
+          margin: '0 0 6px',
+          fontSize: '24px', fontWeight: 800,
+          color: '#191F28', letterSpacing: '-0.03em',
+        }}>
           주문 완료!
         </h2>
         {orderNum && (
-          <p style={{ margin: '0 0 8px', fontSize: '14px', color: 'var(--text-muted)', letterSpacing: '-0.01em' }}>
-            주문번호 <strong style={{ color: 'var(--primary)' }}>{orderNum}</strong>
+          <p style={{ margin: '0 0 6px', fontSize: '14px', color: '#6B7684' }}>
+            주문번호 <strong style={{ color: '#3182F6' }}>{orderNum}</strong>
           </p>
         )}
-        <p style={{ margin: '0 0 32px', fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+        <p style={{ margin: '0 0 28px', fontSize: '14px', color: '#6B7684', lineHeight: 1.6 }}>
           입금 확인 후 서빙을 시작합니다.
         </p>
 
-        {/* Summary */}
-        <div style={{ background: 'var(--surface3)', borderRadius: '16px', padding: '16px', marginBottom: '20px', textAlign: 'left' }}>
-          {cartItems.map(i => (
-            <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: '14px' }}>
-              <span style={{ color: 'var(--text-muted)' }}>{i.title} × {i.quantity}</span>
-              <span style={{ fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
+        {/* 주문 요약 */}
+        <div style={{
+          background: '#FFFFFF', borderRadius: '16px', padding: '16px',
+          marginBottom: '20px', textAlign: 'left',
+        }}>
+          {cartItems.map((i, idx) => (
+            <div key={i.id} style={{
+              display: 'flex', justifyContent: 'space-between',
+              padding: '8px 0',
+              borderBottom: idx < cartItems.length - 1 ? '1px solid #F2F4F6' : 'none',
+            }}>
+              <span style={{ color: '#6B7684', fontSize: '14px' }}>{i.title} × {i.quantity}</span>
+              <span style={{ fontWeight: 700, color: '#191F28', fontSize: '14px', fontVariantNumeric: 'tabular-nums' }}>
                 {(i.price * i.quantity).toLocaleString()}원
               </span>
             </div>
           ))}
-          <div style={{ borderTop: '1px solid var(--border)', marginTop: '10px', paddingTop: '12px', display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontWeight: 700 }}>합계</span>
-            <span style={{ fontWeight: 900, color: 'var(--primary)', fontSize: '17px', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>
+          <div style={{
+            display: 'flex', justifyContent: 'space-between',
+            marginTop: '12px', paddingTop: '12px',
+            borderTop: '1px solid #F2F4F6',
+          }}>
+            <span style={{ fontWeight: 700, color: '#191F28' }}>합계</span>
+            <span style={{ fontWeight: 800, fontSize: '18px', color: '#3182F6', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>
               {cartTotal.toLocaleString()}원
             </span>
           </div>
         </div>
 
-        <button
-          onClick={toggleOrder}
-          style={{
-            width: '100%', padding: '16px',
-            borderRadius: '14px', border: 'none',
-            background: 'var(--surface3)',
-            color: 'var(--text)',
-            fontSize: '15px', fontWeight: 700, cursor: 'pointer',
-            letterSpacing: '-0.02em',
-          }}
-        >
+        <button onClick={toggleOrder} style={{
+          width: '100%', padding: '16px',
+          borderRadius: '12px', border: 'none',
+          background: '#F2F4F6', color: '#6B7684',
+          fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+          letterSpacing: '-0.02em',
+        }}>
           닫기
         </button>
       </div>
     );
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '16px 18px',
-    background: 'transparent',
-    border: 'none',
-    color: 'var(--text)',
-    fontSize: '16px',   /* must be ≥ 16px to prevent iOS Safari auto-zoom on focus */
-    outline: 'none',
-    fontFamily: 'inherit',
-    letterSpacing: '-0.02em',
-  };
-
-  const rowStyle: React.CSSProperties = {
-    display: 'flex', alignItems: 'center',
-    borderBottom: '1px solid var(--border)',
-    padding: '0',
-  };
-
-  /* ─── Main form ─── */
+  /* ─── 주문 폼 ─── */
   return (
-    <div style={{ paddingBottom: '12px', background: 'var(--surface2)' }}>
+    <div style={{ padding: '16px', background: '#F2F4F6', paddingBottom: '12px' }}>
 
-      {/* Notice */}
+      {/* 안내 */}
       <div style={{
         display: 'flex', gap: '10px', alignItems: 'flex-start',
-        padding: '14px 20px',
-        background: '#FFF8ED',
-        borderBottom: '1px solid #FFE0A0',
+        padding: '14px 16px',
+        background: '#EBF3FE',
+        borderRadius: '12px',
         marginBottom: '16px',
       }}>
-        <span style={{ fontSize: '16px', flexShrink: 0 }}>⚠️</span>
-        <p style={{ margin: 0, fontSize: '13px', color: '#996600', lineHeight: 1.6 }}>
-          주문 완료 후 변경·취소·환불이 <strong>불가</strong>합니다. 테이블 번호와 입금자명을 정확히 입력해주세요.
+        <span style={{ fontSize: '15px', flexShrink: 0 }}>💡</span>
+        <p style={{ margin: 0, fontSize: '13px', color: '#3182F6', lineHeight: 1.6, letterSpacing: '-0.01em' }}>
+          주문 완료 후 변경·취소·환불이 <strong>불가</strong>합니다.
+          테이블 번호와 입금자명을 정확히 입력해주세요.
         </p>
       </div>
 
-      {/* Cart */}
-      <Section title="장바구니">
+      {/* 장바구니 */}
+      <Card label="장바구니">
         {cartItems.map((item, idx) => (
-          <div key={item.id} style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            padding: '14px 18px',
-            borderBottom: idx < cartItems.length - 1 ? '1px solid var(--border)' : 'none',
-          }}>
-            <span style={{ flex: 1, fontSize: '14px', fontWeight: 600, color: 'var(--text)', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>
-              {item.title}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  onClick={() => updateCartItem(item.id, item.quantity - 1)}
-                  style={{
-                    width: '28px', height: '28px', borderRadius: '50%', border: 'none',
-                    background: item.quantity <= 1 ? 'var(--danger-bg)' : 'var(--surface3)',
-                    color: item.quantity <= 1 ? 'var(--danger)' : 'var(--text-muted)',
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  {item.quantity <= 1 ? <Trash2 size={13} /> : <Minus size={13} />}
-                </button>
-                <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text)', minWidth: '18px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
-                  {item.quantity}
-                </span>
-                <button
-                  onClick={() => updateCartItem(item.id, item.quantity + 1)}
-                  style={{
-                    width: '28px', height: '28px', borderRadius: '50%', border: 'none',
-                    background: 'var(--primary-light)',
-                    color: 'var(--primary)',
-                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  <Plus size={13} />
-                </button>
-              </div>
-              <span style={{ minWidth: '72px', textAlign: 'right', fontSize: '14px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', color: 'var(--text)' }}>
-                {(item.price * item.quantity).toLocaleString()}원
+          <React.Fragment key={item.id}>
+            <div style={{
+              display: 'flex', alignItems: 'center',
+              padding: '14px 16px', gap: '10px',
+            }}>
+              <span style={{
+                flex: 1, fontSize: '14px', fontWeight: 600,
+                color: '#191F28', letterSpacing: '-0.01em',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {item.title}
               </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                {/* 수량 조절 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button onClick={() => updateCartItem(item.id, item.quantity - 1)} style={{
+                    width: '26px', height: '26px', borderRadius: '100px', border: 'none',
+                    background: item.quantity <= 1 ? '#FEF0F2' : '#F2F4F6',
+                    color: item.quantity <= 1 ? '#F04452' : '#6B7684',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {item.quantity <= 1 ? <Trash2 size={11} /> : <Minus size={11} />}
+                  </button>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#191F28', minWidth: '16px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
+                    {item.quantity}
+                  </span>
+                  <button onClick={() => updateCartItem(item.id, item.quantity + 1)} style={{
+                    width: '26px', height: '26px', borderRadius: '100px', border: 'none',
+                    background: '#EBF3FE', color: '#3182F6',
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Plus size={11} />
+                  </button>
+                </div>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: '#191F28', minWidth: '72px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                  {(item.price * item.quantity).toLocaleString()}원
+                </span>
+              </div>
             </div>
-          </div>
+            {idx < cartItems.length - 1 && <Divider />}
+          </React.Fragment>
         ))}
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 18px' }}>
-          <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>합계</span>
-          <span style={{ fontSize: '18px', fontWeight: 900, color: 'var(--primary)', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.04em' }}>
+        {/* 합계 */}
+        <div style={{ borderTop: '1px solid #F2F4F6', padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: '#6B7684' }}>합계</span>
+          <span style={{ fontSize: '18px', fontWeight: 800, color: '#3182F6', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>
             {cartTotal.toLocaleString()}원
           </span>
         </div>
-      </Section>
+      </Card>
 
-      {/* Info */}
-      <Section title="주문자 정보">
-        <div style={rowStyle}>
-          <span style={{ padding: '0 0 0 18px', fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', flexShrink: 0, width: '90px' }}>입금자 성함</span>
-          <input name="name" value={info.name} onChange={handleChange} placeholder="홍길동" style={inputStyle}
-            onFocus={e => e.target.parentElement!.style.background = 'var(--primary-light)'}
-            onBlur={e => e.target.parentElement!.style.background = 'transparent'}
+      {/* 주문자 정보 */}
+      <Card label="주문자 정보">
+        {/* 입금자 */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#6B7684', flexShrink: 0, width: '80px' }}>입금자 성함</span>
+          <input name="name" value={info.name} onChange={handleChange}
+            placeholder="홍길동"
+            style={{
+              flex: 1, padding: '14px 0',
+              background: 'transparent', border: 'none',
+              color: '#191F28', fontSize: '15px', outline: 'none',
+              fontFamily: 'inherit', letterSpacing: '-0.01em',
+            }}
           />
         </div>
-        <div style={rowStyle}>
-          <span style={{ padding: '0 0 0 18px', fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', flexShrink: 0, width: '90px' }}>테이블 번호</span>
-          <input name="phone" value={info.phone} onChange={handleChange} placeholder="예) 12" style={inputStyle}
-            onFocus={e => e.target.parentElement!.style.background = 'var(--primary-light)'}
-            onBlur={e => e.target.parentElement!.style.background = 'transparent'}
+        <Divider />
+        {/* 테이블 번호 */}
+        <div style={{ display: 'flex', alignItems: 'center', padding: '0 16px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#6B7684', flexShrink: 0, width: '80px' }}>테이블 번호</span>
+          <input name="phone" value={info.phone} onChange={handleChange}
+            placeholder="예) 12"
+            style={{
+              flex: 1, padding: '14px 0',
+              background: 'transparent', border: 'none',
+              color: '#191F28', fontSize: '15px', outline: 'none',
+              fontFamily: 'inherit', letterSpacing: '-0.01em',
+            }}
           />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)' }}>인원</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <button type="button" onClick={() => setPeople(p => Math.max(1, p - 1))}
-              style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: 'var(--surface3)', color: 'var(--text)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Minus size={14} />
+        <Divider />
+        {/* 인원 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#6B7684' }}>인원</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <button type="button" onClick={() => setPeople(p => Math.max(1, p - 1))} style={{
+              width: '30px', height: '30px', borderRadius: '100px', border: 'none',
+              background: '#F2F4F6', color: '#6B7684',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Minus size={12} />
             </button>
-            <span style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', minWidth: '32px', textAlign: 'center', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em' }}>
+            <span style={{ fontSize: '16px', fontWeight: 800, color: '#191F28', minWidth: '30px', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>
               {people}명
             </span>
-            <button type="button" onClick={() => setPeople(p => p + 1)}
-              style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: 'var(--primary-light)', color: 'var(--primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Plus size={14} />
+            <button type="button" onClick={() => setPeople(p => p + 1)} style={{
+              width: '30px', height: '30px', borderRadius: '100px', border: 'none',
+              background: '#3182F6', color: '#FFFFFF',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Plus size={12} />
             </button>
           </div>
         </div>
-      </Section>
+      </Card>
 
-      {/* Bank */}
-      <Section title="계좌 송금">
-        {[{ label: '은행', value: BANK.bank }, { label: '예금주', value: BANK.name }].map(r => (
-          <div key={r.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px', borderBottom: '1px solid var(--border)' }}>
-            <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 500 }}>{r.label}</span>
-            <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.01em' }}>{r.value}</span>
-          </div>
+      {/* 계좌 송금 */}
+      <Card label="계좌 송금">
+        {[{ label: '은행', value: BANK.bank }, { label: '예금주', value: BANK.name }].map((r, idx) => (
+          <React.Fragment key={r.label}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px' }}>
+              <span style={{ fontSize: '13px', color: '#6B7684', fontWeight: 600 }}>{r.label}</span>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#191F28' }}>{r.value}</span>
+            </div>
+            {idx === 0 && <Divider />}
+          </React.Fragment>
         ))}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px' }}>
-          <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 500 }}>계좌번호</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em', color: 'var(--text)' }}>
+        <Divider />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px' }}>
+          <span style={{ fontSize: '13px', color: '#6B7684', fontWeight: 600 }}>계좌번호</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '14px', fontWeight: 800, color: '#191F28', fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
               {BANK.account}
             </span>
             <button onClick={copyAccount} style={{
               display: 'flex', alignItems: 'center', gap: '4px',
-              padding: '6px 12px', borderRadius: '100px', border: 'none',
-              background: copied ? 'var(--success-bg)' : 'var(--primary-light)',
-              color: copied ? 'var(--success)' : 'var(--primary)',
+              padding: '6px 12px',
+              borderRadius: '100px', border: 'none',
+              background: copied ? '#E5FBF2' : '#EBF3FE',
+              color: copied ? '#00C073' : '#3182F6',
               fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              letterSpacing: '-0.01em',
+              transition: 'all 0.15s ease',
             }}>
-              {copied ? <Check size={12} /> : <Copy size={12} />}
+              {copied ? <Check size={11} /> : <Copy size={11} />}
               {copied ? '복사됨' : '복사'}
             </button>
           </div>
         </div>
-      </Section>
+      </Card>
 
-      {/* Image upload */}
-      <div style={{ marginBottom: '8px', padding: '0 16px' }}>
-        <p style={{ margin: '0 0 10px 4px', fontSize: '13px', fontWeight: 700, color: 'var(--text-muted)' }}>송금 증빙</p>
+      {/* 송금 증빙 */}
+      <div style={{ marginBottom: '8px' }}>
+        <p style={{ margin: '0 0 8px 4px', fontSize: '13px', fontWeight: 700, color: '#6B7684' }}>송금 증빙</p>
         <label style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: '8px', padding: '28px 20px',
-          borderRadius: '16px',
-          border: `2px dashed ${image ? 'var(--success)' : 'var(--border)'}`,
-          background: image ? 'var(--success-bg)' : 'var(--surface)',
+          gap: '8px', padding: '24px 20px',
+          borderRadius: '12px',
+          border: `2px dashed ${image ? '#00C073' : '#E5E8EB'}`,
+          background: image ? '#E5FBF2' : '#FFFFFF',
           cursor: 'pointer', textAlign: 'center',
           transition: 'all 0.2s ease',
         }}>
           {image ? (
             <>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--success-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Check size={24} color="var(--success)" strokeWidth={2.5} />
+              <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#00C073', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Check size={22} color="#FFFFFF" strokeWidth={2.5} />
               </div>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--success)', letterSpacing: '-0.01em' }}>업로드 완료</span>
-              <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{image.name}</span>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#00C073' }}>업로드 완료</span>
+              <span style={{ fontSize: '12px', color: '#6B7684' }}>{image.name}</span>
             </>
           ) : (
             <>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--surface3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Upload size={22} color="var(--text-dim)" />
+              <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#EBF3FE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Upload size={20} color="#3182F6" />
               </div>
-              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '-0.01em' }}>이미지를 탭해서 첨부하세요</span>
-              <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>JPG, PNG 지원</span>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: '#6B7684' }}>이미지를 탭해서 첨부하세요</span>
+              <span style={{ fontSize: '12px', color: '#B0B8C1' }}>JPG, PNG 지원</span>
             </>
           )}
           <input type="file" accept="image/*" onChange={handleImage} style={{ display: 'none' }} />
@@ -358,76 +404,71 @@ const OrderForm: React.FC<OrderFormProps> = ({
         {image && (
           <button onClick={() => setImage(null)} style={{
             display: 'flex', alignItems: 'center', gap: '4px',
-            marginTop: '8px', background: 'none', border: 'none',
-            color: 'var(--text-dim)', fontSize: '12px', cursor: 'pointer', padding: 0,
+            marginTop: '6px', background: 'none', border: 'none',
+            color: '#B0B8C1', fontSize: '12px', cursor: 'pointer', padding: '0 4px',
           }}>
-            <X size={12} /> 다시 선택
+            <X size={11} /> 다시 선택
           </button>
         )}
       </div>
 
-      {/* Consent */}
-      <Section title="이용 동의">
+      {/* 이용 동의 */}
+      <Card label="이용 동의">
         {[
           { name: 'privacyAgree', checked: info.privacyAgree, label: '개인정보 처리방침', onClick: () => setShowPrivacy(true) },
           { name: 'termsAgree',   checked: info.termsAgree,   label: '이용약관',          onClick: () => setShowTerms(true) },
         ].map((cb, idx) => (
-          <label key={cb.name} style={{
-            display: 'flex', alignItems: 'center', gap: '12px',
-            padding: '16px 18px',
-            borderBottom: idx === 0 ? '1px solid var(--border)' : 'none',
-            cursor: 'pointer',
-          }}>
-            <div style={{
-              width: '22px', height: '22px', borderRadius: '6px', flexShrink: 0,
-              border: `2px solid ${cb.checked ? 'var(--primary)' : 'var(--border)'}`,
-              background: cb.checked ? 'var(--primary)' : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.15s ease',
+          <React.Fragment key={cb.name}>
+            <label style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              padding: '14px 16px', cursor: 'pointer',
             }}>
-              {cb.checked && <Check size={13} color="#fff" strokeWidth={3} />}
-            </div>
-            <input type="checkbox" name={cb.name} checked={cb.checked} onChange={handleChange} style={{ display: 'none' }} />
-            <span style={{ fontSize: '14px', color: 'var(--text-muted)', flex: 1, letterSpacing: '-0.01em' }}>
-              <span
-                onClick={e => { e.preventDefault(); cb.onClick(); }}
-                style={{ color: 'var(--primary)', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: '3px', cursor: 'pointer' }}
-              >
-                {cb.label}
-              </span>에 동의합니다
-            </span>
-          </label>
+              <div style={{
+                width: '22px', height: '22px', borderRadius: '6px', flexShrink: 0,
+                border: `2px solid ${cb.checked ? '#3182F6' : '#E5E8EB'}`,
+                background: cb.checked ? '#3182F6' : 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.15s ease',
+              }}>
+                {cb.checked && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
+              </div>
+              <input type="checkbox" name={cb.name} checked={cb.checked} onChange={handleChange} style={{ display: 'none' }} />
+              <span style={{ fontSize: '13px', color: '#6B7684', flex: 1, letterSpacing: '-0.01em' }}>
+                <span
+                  onClick={e => { e.preventDefault(); cb.onClick(); }}
+                  style={{ color: '#3182F6', fontWeight: 700, textDecoration: 'underline', textUnderlineOffset: '3px', cursor: 'pointer' }}
+                >
+                  {cb.label}
+                </span>에 동의합니다
+              </span>
+            </label>
+            {idx === 0 && <Divider />}
+          </React.Fragment>
         ))}
-      </Section>
+      </Card>
 
-      {/* CTA */}
+      {/* 주문 버튼 */}
       <div style={{
         position: 'sticky', bottom: 0,
-        background: 'linear-gradient(to bottom, transparent, var(--surface2) 28%)',
-        padding: '16px 16px calc(20px + env(safe-area-inset-bottom, 0px))',
+        background: 'linear-gradient(to bottom, transparent, #F2F4F6 28%)',
+        padding: '16px 0 calc(16px + env(safe-area-inset-bottom, 0px))',
       }}>
         <button
           onClick={submit}
           disabled={!isValid || submitting}
           style={{
-            position: 'relative', overflow: 'hidden',
             width: '100%', padding: '17px',
-            borderRadius: '16px', border: 'none',
-            background: isValid ? 'var(--primary)' : 'var(--surface3)',
-            color: isValid ? '#fff' : 'var(--text-dim)',
+            borderRadius: '14px', border: 'none',
+            background: isValid ? '#3182F6' : '#E5E8EB',
+            color: isValid ? '#FFFFFF' : '#B0B8C1',
             fontSize: '16px', fontWeight: 800,
             cursor: isValid ? 'pointer' : 'not-allowed',
-            boxShadow: isValid ? '0 4px 20px rgba(49,130,246,0.35)' : 'none',
-            transition: 'all 0.2s ease',
-            letterSpacing: '-0.03em',
+            letterSpacing: '-0.02em',
+            boxShadow: isValid ? '0 8px 24px rgba(49,130,246,0.28)' : 'none',
+            transition: 'all 0.18s ease',
           }}
         >
-          {isValid && !submitting && (
-            <span className="shimmer-overlay" style={{ animation: 'shimmer 2.4s ease-in-out infinite' }} />
-          )}
-          <span style={{ position: 'relative', zIndex: 1 }}>
-            {submitting ? '처리 중...' : isValid ? `${cartTotal.toLocaleString()}원 주문하기` : '정보를 모두 입력해주세요'}
-          </span>
+          {submitting ? '처리 중...' : isValid ? `${cartTotal.toLocaleString()}원 주문하기` : '정보를 모두 입력해주세요'}
         </button>
       </div>
 

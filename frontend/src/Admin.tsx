@@ -69,7 +69,7 @@ export default function Admin() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg, #F2F4F6)', fontFamily: "'Apple SD Gothic Neo', 'Malgun Gothic', -apple-system, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#F2F4F6', fontFamily: "'Apple SD Gothic Neo', 'Malgun Gothic', -apple-system, sans-serif" }}>
 
       {/* Header */}
       <div style={{

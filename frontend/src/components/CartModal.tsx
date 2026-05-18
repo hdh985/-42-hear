@@ -14,9 +14,9 @@ interface CartModalProps {
 const CartModal: React.FC<CartModalProps> = ({
   isOpen, toggleOrder, cartItems, cartTotal, cartCount, updateCartItem,
 }) => {
-  const sheetRef   = useRef<HTMLDivElement>(null);
-  const dragStart  = useRef(0);
-  const dragging   = useRef(false);
+  const sheetRef  = useRef<HTMLDivElement>(null);
+  const dragStart = useRef(0);
+  const dragging  = useRef(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -30,19 +30,16 @@ const CartModal: React.FC<CartModalProps> = ({
     };
   }, [isOpen, toggleOrder]);
 
-  /* Swipe-down-to-dismiss — only on the grabber/header area */
   const onGrabStart = (e: React.TouchEvent) => {
     dragStart.current = e.touches[0].clientY;
     dragging.current  = true;
     if (sheetRef.current) sheetRef.current.style.transition = 'none';
   };
-
   const onGrabMove = (e: React.TouchEvent) => {
     if (!dragging.current || !sheetRef.current) return;
     const dy = Math.max(0, e.touches[0].clientY - dragStart.current);
     sheetRef.current.style.transform = `translateY(${dy}px)`;
   };
-
   const onGrabEnd = (e: React.TouchEvent) => {
     if (!dragging.current || !sheetRef.current) return;
     dragging.current = false;
@@ -50,10 +47,10 @@ const CartModal: React.FC<CartModalProps> = ({
     if (dy > 120) {
       toggleOrder();
     } else {
-      sheetRef.current.style.transition = 'transform 0.32s cubic-bezier(.32,.72,0,1)';
+      sheetRef.current.style.transition = 'transform 0.3s cubic-bezier(.32,.72,0,1)';
       sheetRef.current.style.transform  = 'translateY(0)';
       const el = sheetRef.current;
-      setTimeout(() => { el.style.transition = ''; }, 340);
+      setTimeout(() => { el.style.transition = ''; }, 320);
     }
   };
 
@@ -61,20 +58,20 @@ const CartModal: React.FC<CartModalProps> = ({
 
   return createPortal(
     <>
-      {/* Backdrop */}
+      {/* 배경 */}
       <div
         aria-hidden
         onClick={toggleOrder}
         style={{
           position: 'fixed', inset: 0, zIndex: 100,
           background: 'rgba(0,0,0,0.5)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          animation: 'fade-in 0.2s ease both',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+          animation: 'fade-in 0.18s ease both',
         }}
       />
 
-      {/* Sheet */}
+      {/* 시트 */}
       <div
         ref={sheetRef}
         role="dialog"
@@ -87,42 +84,50 @@ const CartModal: React.FC<CartModalProps> = ({
           maxHeight: '92dvh',
           display: 'flex',
           flexDirection: 'column',
-          borderRadius: '24px 24px 0 0',
-          background: 'var(--surface)',
-          boxShadow: '0 -8px 48px rgba(0,0,0,0.16)',
-          animation: 'slide-up-sheet 0.36s cubic-bezier(.32,.72,0,1) both',
+          borderRadius: '20px 20px 0 0',
+          background: '#F2F4F6',
+          boxShadow: '0 -4px 40px rgba(0,0,0,0.15)',
+          animation: 'slide-up-sheet 0.3s cubic-bezier(.32,.72,0,1) both',
           overflow: 'hidden',
           willChange: 'transform',
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Drag handle — swipe target */}
+        {/* 드래그 핸들 */}
         <div
           onTouchStart={onGrabStart}
           onTouchMove={onGrabMove}
           onTouchEnd={onGrabEnd}
-          style={{ flexShrink: 0, cursor: 'grab', userSelect: 'none' }}
+          style={{
+            background: '#FFFFFF',
+            flexShrink: 0,
+            cursor: 'grab',
+            userSelect: 'none',
+            borderBottom: '1px solid #E5E8EB',
+          }}
         >
-          {/* Grabber pill */}
           <div style={{ padding: '12px 0 0', display: 'flex', justifyContent: 'center' }}>
             <div style={{
               width: '36px', height: '4px',
               borderRadius: '100px',
-              background: 'var(--border)',
+              background: '#E5E8EB',
             }} />
           </div>
 
-          {/* Header */}
+          {/* 헤더 */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 20px 14px',
+            padding: '12px 20px 16px',
           }}>
             <div>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.03em' }}>
-                주문하기
+              <h2 style={{
+                margin: 0, fontSize: '18px', fontWeight: 800,
+                color: '#191F28', letterSpacing: '-0.03em',
+              }}>
+                장바구니
               </h2>
-              <p style={{ margin: '2px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
-                {cartCount}개 항목 · {cartTotal.toLocaleString()}원
+              <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#6B7684', letterSpacing: '-0.01em' }}>
+                {cartCount}개 · <strong style={{ color: '#3182F6' }}>{cartTotal.toLocaleString()}원</strong>
               </p>
             </div>
             <button
@@ -131,13 +136,13 @@ const CartModal: React.FC<CartModalProps> = ({
               aria-label="닫기"
               style={{
                 width: '32px', height: '32px',
-                borderRadius: '50%',
+                borderRadius: '100px',
                 border: 'none',
-                background: 'var(--surface3)',
-                color: 'var(--text-muted)',
+                background: '#F2F4F6',
+                color: '#6B7684',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 cursor: 'pointer',
-                fontSize: '16px',
+                fontSize: '16px', fontWeight: 500,
               }}
             >
               ✕
@@ -145,11 +150,13 @@ const CartModal: React.FC<CartModalProps> = ({
           </div>
         </div>
 
-        {/* Divider */}
-        <div style={{ height: '1px', background: 'var(--border)', flexShrink: 0 }} />
-
-        {/* Scrollable content */}
-        <div style={{ flex: 1, overflowY: 'auto', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+        {/* 스크롤 영역 */}
+        <div style={{
+          flex: 1,
+          overflowY: 'auto',
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch',
+        } as React.CSSProperties}>
           <OrderForm
             cartItems={cartItems}
             cartTotal={cartTotal}
