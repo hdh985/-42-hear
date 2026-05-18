@@ -3,10 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from database import Base, engine
-from api import order, waiting, admin_waiting
+from api import order, waiting, admin_waiting, menu
+from sqlalchemy import text
 import os
 
 Base.metadata.create_all(bind=engine)
+
+try:
+    with engine.connect() as _conn:
+        _conn.execute(text("ALTER TABLE orders ADD COLUMN checked_out BOOLEAN DEFAULT FALSE"))
+        _conn.commit()
+except Exception:
+    pass  # column already exists
 
 app = FastAPI()
 
@@ -34,6 +42,7 @@ app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 app.include_router(order.router)
 app.include_router(waiting.router)
 app.include_router(admin_waiting.router)
+app.include_router(menu.router)
 
 if __name__ == "__main__":
     import uvicorn

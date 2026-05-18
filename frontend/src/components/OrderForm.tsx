@@ -65,7 +65,9 @@ const OrderForm: React.FC<OrderFormProps> = ({
   cartItems, cartTotal, toggleOrder, updateCartItem,
 }) => {
   const [done, setDone] = useState(false);
-  const [info, setInfo] = useState({ name: '', phone: '', privacyAgree: false, termsAgree: false });
+  const [info, setInfo] = useState({ name: '', privacyAgree: false, termsAgree: false });
+  const [zone, setZone] = useState<'돌다방' | '흡연부스'>('돌다방');
+  const [seatNum, setSeatNum] = useState(1);
   const [image, setImage] = useState<File | null>(null);
   const [orderNum, setOrderNum] = useState('');
   const [people, setPeople] = useState(2);
@@ -104,16 +106,18 @@ const OrderForm: React.FC<OrderFormProps> = ({
     }
   };
 
+  const tableValue = zone === '돌다방' ? String(seatNum) : String(seatNum + 100);
+
   const submit = async () => {
     if (submitting) return;
-    const { name, phone, privacyAgree, termsAgree } = info;
-    if (!name || !phone || !privacyAgree || !termsAgree || !image) {
+    const { name, privacyAgree, termsAgree } = info;
+    if (!name || !seatNum || !privacyAgree || !termsAgree || !image) {
       alert('모든 필수 항목을 입력해주세요.');
       return;
     }
     setSubmitting(true);
     const fd = new FormData();
-    fd.append('table', phone);
+    fd.append('table', tableValue);
     fd.append('name', name);
     fd.append('items', JSON.stringify(cartItems.map(i => `${i.title} x ${i.quantity}`)));
     fd.append('total', cartTotal.toString());
@@ -134,7 +138,7 @@ const OrderForm: React.FC<OrderFormProps> = ({
     }
   };
 
-  const isValid = !!(info.name && info.phone && info.privacyAgree && info.termsAgree && image);
+  const isValid = !!(info.name && seatNum > 0 && info.privacyAgree && info.termsAgree && image);
 
   /* ─── 완료 화면 ─── */
   if (done) {
@@ -297,18 +301,47 @@ const OrderForm: React.FC<OrderFormProps> = ({
           />
         </div>
         <Divider />
-        {/* 테이블 번호 */}
+        {/* 구역 선택 */}
+        <div style={{ padding: '12px 16px 8px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#6B7684', display: 'block', marginBottom: '8px' }}>구역</span>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {(['돌다방', '흡연부스'] as const).map(z => (
+              <button key={z} type="button" onClick={() => { setZone(z); setSeatNum(1); }} style={{
+                flex: 1, padding: '9px 0', borderRadius: '10px', border: 'none',
+                background: zone === z ? '#3182F6' : '#F2F4F6',
+                color: zone === z ? '#FFFFFF' : '#6B7684',
+                fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}>
+                {z === '돌다방' ? '☕ 돌다방' : '🚬 흡연부스'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <Divider />
+        {/* 좌석 번호 */}
         <div style={{ display: 'flex', alignItems: 'center', padding: '0 16px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#6B7684', flexShrink: 0, width: '80px' }}>테이블 번호</span>
-          <input name="phone" value={info.phone} onChange={handleChange}
-            placeholder="예) 12"
+          <span style={{ fontSize: '13px', fontWeight: 600, color: '#6B7684', flexShrink: 0, width: '80px' }}>좌석 번호</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={70}
+            value={seatNum === 0 ? '' : seatNum}
+            onChange={e => {
+              const v = parseInt(e.target.value, 10);
+              setSeatNum(isNaN(v) ? 0 : Math.min(70, Math.max(1, v)));
+            }}
+            placeholder="번호 입력"
             style={{
               flex: 1, padding: '14px 0',
               background: 'transparent', border: 'none',
-              color: '#191F28', fontSize: '15px', outline: 'none',
-              fontFamily: 'inherit', letterSpacing: '-0.01em',
+              color: '#191F28', fontSize: '15px', fontWeight: 800,
+              outline: 'none', fontFamily: 'inherit',
+              textAlign: 'right', fontVariantNumeric: 'tabular-nums',
             }}
           />
+          <span style={{ fontSize: '14px', fontWeight: 600, color: '#6B7684', marginLeft: '4px' }}>번</span>
         </div>
         <Divider />
         {/* 인원 */}

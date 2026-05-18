@@ -81,6 +81,7 @@ def get_orders(db: Session = Depends(get_db)):
         "image_path": o.image_path,
         "timestamp": o.timestamp,
         "processed": o.processed,
+        "checked_out": o.checked_out,
         "table_size": o.table_size,
         "consent_privacy": o.consent_privacy,
         "consent_terms": o.consent_terms
