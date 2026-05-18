@@ -78,8 +78,7 @@ export default function AdminLogin({ onLogin }: Props) {
         display: 'flex', alignItems: 'center', gap: '10px',
         position: 'sticky', top: 0, zIndex: 10,
       }}>
-        <img src="/yunsul.jpg" alt="윤슬" style={{ width: '32px', height: '32px', borderRadius: '10px', objectFit: 'cover' }} />
-        <span style={{ fontSize: '18px', fontWeight: 900, color: '#191F28', letterSpacing: '-0.03em' }}>윤슬 운영</span>
+        <img src="/yunsul.jpg" alt="윤슬" style={{ width: '40px', height: '40px', borderRadius: '12px', objectFit: 'cover' }} />
       </div>
 
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '28px 16px 40px' }}>
