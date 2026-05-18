@@ -14,12 +14,9 @@ export default function Admin() {
   const [animatedRevenue, setAnimatedRevenue] = useState(0);
   const [revenueRanks, setRevenueRanks] = useState<RevenueRank>({});
   const [adminName, setAdminName] = useState<string | null>(null);
-  const [editingName, setEditingName] = useState(false);
-  const [tempName, setTempName] = useState('');
   const [installable, setInstallable] = useState(false);
   const deferredPrompt = useRef<any>(null);
 
-  // PWA 설치 이벤트 캐치
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
@@ -41,6 +38,11 @@ export default function Admin() {
     const saved = localStorage.getItem('adminName');
     if (saved) setAdminName(saved);
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminName');
+    setAdminName(null);
+  };
 
   type OrderItem = { name: string; served_by?: string };
   type Order = { id: number; table: string; name: string; items: OrderItem[] | string; total: number; timestamp: string; processed: boolean; };
@@ -99,20 +101,13 @@ export default function Admin() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         position: 'sticky', top: 0, zIndex: 30, height: '52px',
       }}>
-        {/* 로고 + 타이틀 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <img
-            src="/yunsul.jpg"
-            alt="윤슬"
-            style={{ width: '28px', height: '28px', borderRadius: '8px', objectFit: 'cover' }}
-          />
-          <span style={{ fontSize: '17px', fontWeight: 900, color: '#191F28', letterSpacing: '-0.03em' }}>
-            운영
-          </span>
-        </div>
+        <img
+          src="/yunsul.jpg"
+          alt="윤슬"
+          style={{ width: '34px', height: '34px', borderRadius: '10px', objectFit: 'cover' }}
+        />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* PWA 설치 버튼 (Android Chrome) */}
           {installable && (
             <button onClick={handleInstall} style={{
               display: 'flex', alignItems: 'center', gap: '5px',
@@ -131,7 +126,7 @@ export default function Admin() {
             <RefreshCw size={15} />
           </button>
           <button
-            onClick={() => { setTempName(adminName); setEditingName(true); }}
+            onClick={handleLogout}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               padding: '7px 12px', borderRadius: '100px', border: 'none',
@@ -253,48 +248,6 @@ export default function Admin() {
           </button>
         ))}
       </div>
-
-      {/* 이름 수정 모달 */}
-      {editingName && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 200,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', padding: '20px',
-        }}>
-          <div style={{ width: '100%', maxWidth: '360px', background: '#fff', borderRadius: '20px', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
-            <div style={{ padding: '20px 20px 0' }}>
-              <h5 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 800, color: '#191F28', letterSpacing: '-0.03em' }}>관리자 이름 수정</h5>
-              <input
-                value={tempName}
-                onChange={e => setTempName(e.target.value)}
-                style={{
-                  width: '100%', padding: '14px 16px',
-                  border: '1px solid #E5E8EB', borderRadius: '12px',
-                  fontSize: '15px', outline: 'none',
-                  letterSpacing: '-0.02em', boxSizing: 'border-box',
-                }}
-                placeholder="이름 입력"
-                onFocus={e => { e.target.style.borderColor = '#3182F6'; }}
-                onBlur={e => { e.target.style.borderColor = '#E5E8EB'; }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '8px', padding: '16px 20px 20px' }}>
-              <button onClick={() => setEditingName(false)} style={{
-                flex: 1, padding: '14px', borderRadius: '12px', border: 'none',
-                background: '#F2F4F6', color: '#6B7684', fontSize: '15px', fontWeight: 700, cursor: 'pointer',
-              }}>취소</button>
-              <button onClick={() => {
-                const name = tempName.trim();
-                if (!name) return;
-                setAdminName(name); localStorage.setItem('adminName', name); setEditingName(false);
-              }} style={{
-                flex: 1, padding: '14px', borderRadius: '12px', border: 'none',
-                background: '#3182F6', color: '#fff', fontSize: '15px', fontWeight: 700, cursor: 'pointer',
-              }}>저장</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
