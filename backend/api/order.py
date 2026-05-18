@@ -105,8 +105,8 @@ async def toggle_processed(order_id: int, db: Session = Depends(get_db)):
 @router.patch("/orders/{order_id}/serve-item")
 def toggle_item_served(
     order_id: int,
-    item_index: int = Form(...),
-    admin: str = Form(...),
+    item_index: int,
+    admin: str,
     db: Session = Depends(get_db)
 ):
     order = db.query(Order).filter(Order.id == order_id).first()

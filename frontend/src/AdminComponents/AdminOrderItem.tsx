@@ -87,10 +87,9 @@ export default function AdminOrderItem({ order, adminName, onRefresh }: Props) {
 
     try {
       setLoadingIdx(idx);
-      const fd = new FormData();
-      fd.append('item_index', String(idx));
-      fd.append('admin', isUndo ? '' : adminName);
-      await axios.patch(`${API}/api/orders/${order.id}/serve-item`, fd);
+      await axios.patch(
+        `${API}/api/orders/${order.id}/serve-item?item_index=${idx}&admin=${encodeURIComponent(isUndo ? '' : adminName)}`
+      );
       // 완료 주문에서 되돌렸으면 order도 대기로 복원
       if (isUndo && wasProcessed) {
         await axios.patch(`${API}/api/orders/${order.id}/toggle`);

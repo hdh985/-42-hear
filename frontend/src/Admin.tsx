@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import OrderManager from './AdminComponents/OrderManager';
 import WaitingManager from './AdminComponents/AdminWaitingManager';
 import MenuManager from './AdminComponents/MenuManager';
 import SeatMap from './AdminComponents/SeatMap';
-import { Trophy, RefreshCw, User as UserIcon, Award } from 'lucide-react';
+import { Trophy, RefreshCw, User as UserIcon, Award, Download } from 'lucide-react';
 
 interface RevenueRank { [admin: string]: number; }
 
@@ -15,6 +15,26 @@ export default function Admin() {
   const [adminName, setAdminName] = useState<string | null>(null);
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState('');
+  const [installable, setInstallable] = useState(false);
+  const deferredPrompt = useRef<any>(null);
+
+  // PWA 설치 이벤트 캐치
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      deferredPrompt.current = e;
+      setInstallable(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt.current) return;
+    deferredPrompt.current.prompt();
+    deferredPrompt.current = null;
+    setInstallable(false);
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem('adminName');
@@ -76,20 +96,37 @@ export default function Admin() {
   return (
     <div style={{ minHeight: '100vh', background: '#F2F4F6', fontFamily: "'Apple SD Gothic Neo', 'Malgun Gothic', -apple-system, sans-serif" }}>
 
-      {/* 상단 헤더 (탭 없음 — 하단 탭바로 이동) */}
+      {/* 상단 헤더 */}
       <div style={{
-        background: '#fff',
-        borderBottom: '1px solid #E5E8EB',
+        background: '#fff', borderBottom: '1px solid #E5E8EB',
         padding: '0 16px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        position: 'sticky', top: 0, zIndex: 30,
-        height: '52px',
+        position: 'sticky', top: 0, zIndex: 30, height: '52px',
       }}>
-        <span style={{ fontSize: '17px', fontWeight: 900, color: '#191F28', letterSpacing: '-0.03em' }}>
-          어드민
-        </span>
+        {/* 로고 + 타이틀 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <img
+            src="/yunsul.jpg"
+            alt="윤슬"
+            style={{ width: '28px', height: '28px', borderRadius: '8px', objectFit: 'cover' }}
+          />
+          <span style={{ fontSize: '17px', fontWeight: 900, color: '#191F28', letterSpacing: '-0.03em' }}>
+            운영
+          </span>
+        </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* PWA 설치 버튼 (Android Chrome) */}
+          {installable && (
+            <button onClick={handleInstall} style={{
+              display: 'flex', alignItems: 'center', gap: '5px',
+              padding: '6px 12px', borderRadius: '100px', border: 'none',
+              background: '#EBF3FE', color: '#3182F6',
+              fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+            }}>
+              <Download size={12} /> 바탕화면 추가
+            </button>
+          )}
           <button onClick={() => window.location.reload()} style={{
             width: '36px', height: '36px', borderRadius: '100px', border: 'none',
             background: '#F2F4F6', color: '#6B7684',
@@ -113,7 +150,20 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* 컨텐츠 (하단 탭바 높이만큼 패딩) */}
+      {/* iOS "바탕화면에 추가" 안내 배너 */}
+      {!installable && !window.matchMedia('(display-mode: standalone)').matches && (
+        <div style={{
+          background: '#EBF3FE', borderBottom: '1px solid #D6E8FD',
+          padding: '8px 16px',
+          display: 'flex', alignItems: 'center', gap: '8px',
+          fontSize: '12px', color: '#3182F6', fontWeight: 600,
+        }}>
+          <span>📲</span>
+          <span>Safari에서 <strong>공유 → 홈 화면에 추가</strong>로 바탕화면 바로가기를 만들 수 있어요</span>
+        </div>
+      )}
+
+      {/* 컨텐츠 */}
       <div style={{ paddingBottom: 'calc(60px + env(safe-area-inset-bottom, 0px))' }}>
         {activeTab === 'orders'  && <OrderManager adminName={adminName} onOrderData={updateRevenueData} />}
         {activeTab === 'waiting' && <WaitingManager />}
@@ -121,11 +171,9 @@ export default function Admin() {
         {activeTab === 'seatmap' && <SeatMap />}
         {activeTab === 'ranking' && (
           <div style={{ maxWidth: '680px', margin: '0 auto', padding: '16px' }}>
-            {/* 매출 배너 */}
             <div style={{
               background: 'linear-gradient(135deg, #3182F6 0%, #1B64DA 100%)',
-              borderRadius: '20px', padding: '24px',
-              marginBottom: '12px',
+              borderRadius: '20px', padding: '24px', marginBottom: '12px',
               boxShadow: '0 8px 32px rgba(49,130,246,0.3)',
               display: 'flex', alignItems: 'center', gap: '14px',
             }}>
@@ -140,7 +188,6 @@ export default function Admin() {
               </div>
             </div>
 
-            {/* 처리자 랭킹 */}
             <div style={{ background: '#fff', borderRadius: '20px', padding: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
               <h4 style={{ margin: '0 0 16px', fontSize: '17px', fontWeight: 800, color: '#191F28', letterSpacing: '-0.03em', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Award size={18} color="#FF9500" /> 처리자 랭킹
@@ -163,7 +210,7 @@ export default function Admin() {
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <span style={{ fontSize: '22px' }}>{medals[idx] ?? `${idx + 1}`}</span>
-                          <span style={{ fontWeight: 700, fontSize: '15px', color: '#191F28', letterSpacing: '-0.02em' }}>{admin}</span>
+                          <span style={{ fontWeight: 700, fontSize: '15px', color: '#191F28' }}>{admin}</span>
                         </div>
                         <span style={{ fontSize: '16px', fontWeight: 900, color: '#191F28', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
                           {Math.round(amount).toLocaleString('ko-KR')}원
@@ -184,8 +231,7 @@ export default function Admin() {
       {/* 하단 탭바 */}
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40,
-        background: '#fff',
-        borderTop: '1px solid #E5E8EB',
+        background: '#fff', borderTop: '1px solid #E5E8EB',
         display: 'flex',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}>
@@ -199,7 +245,6 @@ export default function Admin() {
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
               gap: '3px', cursor: 'pointer',
-              transition: 'opacity 0.15s',
             }}
           >
             <span style={{ fontSize: '22px', lineHeight: 1 }}>{t.emoji}</span>
@@ -231,7 +276,6 @@ export default function Admin() {
                   border: '1px solid #E5E8EB', borderRadius: '12px',
                   fontSize: '15px', outline: 'none',
                   letterSpacing: '-0.02em', boxSizing: 'border-box',
-                  transition: 'border-color 0.15s',
                 }}
                 placeholder="이름 입력"
                 onFocus={e => { e.target.style.borderColor = '#3182F6'; }}
