@@ -14,7 +14,7 @@ interface OrderFormProps {
   scrollToBottomOnMount?: boolean;
 }
 
-const BANK = { bank: '토스뱅크', account: '1001-9279-2832', name: '이수연' };
+const BANK = { bank: '우리은행', account: '1002-557-614259', name: '김경민' };
 
 function resizeImage(file: File, maxSide = 800, q = 0.9): Promise<File> {
   return new Promise(resolve => {
