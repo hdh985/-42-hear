@@ -24,8 +24,52 @@
 
     <title>윤슬 - 한국어학과 학생회</title>
   </head>
+  <style>
+    #splash {
+      position: fixed;
+      inset: 0;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      transition: opacity 0.45s ease;
+    }
+    #splash.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #splash img {
+      width: 96px;
+      height: 96px;
+      border-radius: 26px;
+      object-fit: cover;
+      animation: splashPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    @keyframes splashPop {
+      0%   { opacity: 0; transform: scale(0.65); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+  </style>
+
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
+
+    <div id="splash">
+      <img src="%PUBLIC_URL%/yunsul.jpg" alt="윤슬" />
+    </div>
+
     <div id="root"></div>
+
+    <script>
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          var splash = document.getElementById('splash');
+          if (!splash) return;
+          splash.classList.add('fade-out');
+          setTimeout(function () { splash.remove(); }, 450);
+        }, 900);
+      });
+    </script>
   </body>
 </html>
